@@ -5,11 +5,16 @@
   "main": "index.js",
   "dependencies": {
     "async": "^3.1.0",
-    "ava": "^2.4.0",
+    "cyphernode-js-sdk": "0.0.5",
+    "debug": "^4.1.1",
     "matrix-js-sdk": "^2.4.2",
     "uuid": "^3.3.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/async": "^3.0.3",
+    "dotenv": "^8.2.0",
+    "ava": "^2.4.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:integration": "NODE_TLS_REJECT_UNAUTHORIZED=0 node -r dotenv/config ./node_modules/ava/cli.js ./src/integrationTests/*.spec.js"
@@ -18,7 +23,7 @@
     "type": "git",
     "url": "git+https://github.com/gabidi/cyphernode-js-sdk-transports.git"
   },
-  "author": "",
+  "author": "@gabidi",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/gabidi/cyphernode-js-sdk-transports/issues"
