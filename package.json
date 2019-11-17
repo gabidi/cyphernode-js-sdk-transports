@@ -24,7 +24,7 @@
     "url": "git+https://github.com/gabidi/cyphernode-js-sdk-transports.git"
   },
   "author": "@gabidi",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/gabidi/cyphernode-js-sdk-transports/issues"
   },

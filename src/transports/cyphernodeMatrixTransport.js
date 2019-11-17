@@ -66,7 +66,7 @@ var v4_1 = __importDefault(require("uuid/v4"));
 var debug_1 = __importDefault(require("debug"));
 var events_1 = require("events");
 var matrixUtil_1 = require("../lib/matrixUtil");
-var debug = debug_1.default("cypherNodeMatrixTransport");
+var debug = debug_1.default("cypherNodeMatrixTransport:");
 var cypherNodeMatrixTransport = function (_a) {
     var _b = _a === void 0 ? {} : _a, _c = _b.roomId, roomId = _c === void 0 ? "" : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e;
     return __awaiter(_this, void 0, void 0, function () {

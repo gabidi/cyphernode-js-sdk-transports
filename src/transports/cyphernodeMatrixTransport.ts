@@ -8,7 +8,7 @@ import {
   CypherNodeCommand,
   CypherNodeMatrixTransportParam
 } from "../lib/types/clients";
-const debug = _debug("cypherNodeMatrixTransport");
+const debug = _debug("cypherNodeMatrixTransport:");
 const cypherNodeMatrixTransport = async ({
   roomId = "",
   client = getSyncMatrixClient(),

@@ -41,7 +41,7 @@ var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var matrix_js_sdk_1 = __importDefault(require("matrix-js-sdk"));
 var debug_1 = __importDefault(require("debug"));
-var debug = debug_1.default("matrixUtil");
+var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
     var _b = _a === void 0 ? {} : _a, _c = _b.user, user = _c === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _c, _d = _b.password, password = _d === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _d, _e = _b.baseUrl, baseUrl = _e === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _e;
     return __awaiter(_this, void 0, void 0, function () {
