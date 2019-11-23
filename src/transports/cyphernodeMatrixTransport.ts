@@ -3,49 +3,49 @@ import uuid from "uuid/v4";
 import _debug from "debug";
 import { EventEmitter } from "events";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
-import {
-  CypherNodeTransport,
-  CypherNodeCommand,
-  CypherNodeMatrixTransportParam
-} from "../lib/types/clients";
-const debug = _debug("cypherNodeMatrixTransport:");
+import { events } from "../constants";
+const debug = _debug("sifir:transport");
 const cypherNodeMatrixTransport = async ({
-  roomId = "",
+  nodeDeviceId = "",
+  nodeAccountUser = "",
   client = getSyncMatrixClient(),
-  emitter = new EventEmitter()
-}: CypherNodeMatrixTransportParam = {}): Promise<
-  CypherNodeTransport & { getMatrixClient: Function }
-> => {
-  if (!roomId) throw "Must provide a room for the transport";
+  emitter = new EventEmitter(),
+  msgTimeout = 30000
+} = {}): Promise<{ get: Function; post: Function }> => {
+  // FIXME types here
+  // } = {}): Promise<CypherNodeTransport & { getMatrixClient: Function }> => {
+  if (!nodeDeviceId || !nodeAccountUser)
+    throw "Must provide device id to send commands to ";
   const matrixClient = await client;
-  const transportRoom = await matrixClient.joinRoom(roomId);
-  debug("Transport in room", transportRoom.roomId);
   // Setup room lsner, re-emits room commands as nonce events on emitter:w
-  matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
-    // we know we only want to respond to messages
-    if (event.getType() !== "m.room.cypherNodeCommand") return;
-    // we are only intested in messages for our room
-    if (event.getRoomId() === transportRoom.roomId) {
-      const { body, msgtype } = event.getContent();
-      // Make sure this is reply not echo
-      if (msgtype !== "m.commandReply") return;
-      const { nonce, reply } = JSON.parse(body);
-      emitter.emit(nonce, { ...reply });
+  matrixClient.on("toDeviceEvent", event => {
+    // // we know we only want to respond to messages
+    if (event.getType() !== events.COMMAND_REPLY) return;
+    debug(events.COMMAND_REPLY, event.getContent());
+    if (event.getSender() !== nodeAccountUser) {
+      // TODO should send message to user phone in this cas
+      console.error("Got command reply from a different account!");
+      return;
     }
+    const { body, msgtype } = event.getContent();
+    // Make sure this is reply not echo
+    // if (msgtype !== "m.commandReply") return;
+    const { nonce, reply } = JSON.parse(body);
+    emitter.emit(nonce, { ...reply });
   });
 
   // Serialize command sending on matrix
   const _commandQueue = queue(async ({ method, command, param, nonce }) => {
-    debug("Transport::Command queue sending", method, command, nonce);
-    await matrixClient.sendEvent(
-      roomId,
-      "m.room.cypherNodeCommand",
-      {
-        body: JSON.stringify({ method, command, param, nonce }),
-        msgtype: "m.commandRequest"
-      },
-      ""
-    );
+    const payload = {
+      [nodeAccountUser]: {
+        [nodeDeviceId]: {
+          body: JSON.stringify({ method, command, param, nonce }),
+          msgtype: events.COMMAND_REQUEST
+        }
+      }
+    };
+    debug("Transport::Command queue sending", method, command, nonce, payload);
+    await matrixClient.sendToDevice(events.COMMAND_REQUEST, payload, nonce);
   }, 1);
   // Sends uuids the comand  and sends it to queue
   // @return a promise that fullfills with commands reply (when emitter emits nonce)
@@ -55,7 +55,7 @@ const cypherNodeMatrixTransport = async ({
     payload
   }: {
     method: "GET" | "POST";
-    command: CypherNodeCommand;
+    command: String;
     payload: any;
   }) => {
     const nonce = uuid();
@@ -66,7 +66,7 @@ const cypherNodeMatrixTransport = async ({
             -4
           )} ${method}:${command} timedout`
         });
-      }, 30000);
+      }, msgTimeout);
       emitter.once(nonce, ({ err, ...data }) => {
         clearTimeout(timeOut);
         err ? rej({ err }) : res(data);
@@ -80,11 +80,10 @@ const cypherNodeMatrixTransport = async ({
     });
     return commandPromise;
   };
-  const get = (command: CypherNodeCommand, payload: any) =>
+  const get = (command: String, payload: any) =>
     _sendCommand({ method: "GET", command, payload });
-  const post = (command: CypherNodeCommand, payload: any) =>
+  const post = (command: String, payload: any) =>
     _sendCommand({ method: "POST", command, payload });
-  const getMatrixClient = () => matrixClient;
-  return { get, post, getMatrixClient };
+  return { get, post };
 };
 export { cypherNodeMatrixTransport };

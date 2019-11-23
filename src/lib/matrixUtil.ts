@@ -4,17 +4,19 @@ const debug = _debug("matrixutil:");
 const getSyncMatrixClient = async ({
   user = process.env.CYPHERNODE_MATRIX_USER,
   password = process.env.CYPHERNODE_MATRIX_PASS,
-  baseUrl = process.env.CYPHERNODE_MATRIX_SERVER
+  baseUrl = process.env.CYPHERNODE_MATRIX_SERVER,
+  deviceId = undefined
 } = {}): Promise<matrix.MatrixClient> => {
   debug("Conneting to", baseUrl, user);
   const matrixClient = await matrix.createClient({
     baseUrl,
-    initialSyncLimit: 10,
+    initialSyncLimit: 100,
     timelineSupport: true
   });
   await matrixClient.login("m.login.password", {
     user,
-    password
+    password,
+    device_id: deviceId
   });
   matrixClient.startClient();
   let syncFailCount = 0;
@@ -51,9 +53,10 @@ const getSyncMatrixClient = async ({
             syncFailCount++;
           }
         } else if (syncState === "SYNCING") {
-          // update UI to remove any "Connection Lost" message
+          debug("client is in SYNCING state");
           syncFailCount = 0;
         } else if (syncState === "PREPARED") {
+          debug("client is in PREPARED state");
           res(matrixClient);
         }
       }

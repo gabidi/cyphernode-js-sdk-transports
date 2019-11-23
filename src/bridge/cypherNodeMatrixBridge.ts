@@ -6,75 +6,72 @@ import uuid from "uuid/v4";
 import { EventEmitter } from "events";
 import _debug from "debug";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
-const debug = _debug("cypherNodeMatrixServer");
+import { events } from "../constants";
+const debug = _debug("sifir:bridge");
 const cypherNodeMatrixBridge = ({
+  nodeAccountUser = "",
   client = getSyncMatrixClient(),
   transport = cypherNodeHttpTransport()
 } = {}): {
   startBridge: Function;
-  getRoomId: Function;
 } => {
   let serverRoom;
-  /**
-   * @todo Flow
-   * 1. start a channel that we use to intiate with user -> qrcode(server,channel,key)
-   * 2. user logs in server, channel and sends key
-   * 3. server checks if key is valid and calls startServer({inviteUser}) which creates a private channel for that user to start connecting to their cyphernode
-   */
-  const startBridge = async ({ inviteUser = [] } = {}) => {
+  const startBridge = async ({ authorizedDevices = [] } = {}) => {
+    debug("starting bridge", authorizedDevices);
     const { get, post } = transport;
-    const _room = await client.createRoom({
-      invite: inviteUser,
-      visibility: "private",
-      name: `cyphernode-${uuid()}`,
-      room_alias_name: `cyphernode-${uuid()}`
-    });
-    serverRoom = await client.joinRoom(_room.room_id);
-    debug("Start Server _room", serverRoom.roomId);
-    client.on("Room.timeline", async function(event, room, toStartOfTimeline) {
-      // we know we only want to respond to command
-      if (event.getType() !== "m.room.cypherNodeCommand") {
+    const _client = client.then ? await client : client;
+    _client.on("toDeviceEvent", async event => {
+      debug("got event", event.getType(), event.getSender());
+      if (event.getType() !== events.COMMAND_REQUEST) {
         return;
       }
-      // we are only intested in cyphernode.commnads for our room
-      if (event.getRoomId() !== _room.room_id) return;
-      if (event.getContent().msgtype !== "m.commandRequest") return;
-      debug("Server::Got message", event.getContent());
-      client.sendTyping(_room.room_id, true);
-      const { nonce, method, command, param = null } = JSON.parse(
-        // note only body is JSON string
-        event.getContent().body
-      );
-
+      if (event.getSender() !== nodeAccountUser) {
+        // TODO should send message to user phone in this cas
+        console.error("Got command from a different account!");
+        return;
+      }
+      const content = event.getContent();
+      debug("got command!", content);
+      const { method, command, param = null, nonce } = JSON.parse(content.body);
       let reply;
       switch (method) {
         case "GET":
+          debug("processing get", command);
           reply = await get(command, param);
           break;
         case "POST":
+          debug("processing post", command);
           reply = await post(command, param);
           break;
         default:
           console.error("Unknown method", method);
           return;
       }
-      debug("Server::Send Event", nonce, reply);
-      await client.sendEvent(
-        serverRoom.roomId,
-        "m.room.cypherNodeCommand",
-        {
-          body: JSON.stringify({ nonce, reply }),
-          msgtype: "m.commandReply"
+      const devicesConnected = await _client.getDevices();
+      const accountMessages = devicesConnected.devices.reduce(
+        (payload, { device_id }) => {
+          payload[device_id] = {
+            body: JSON.stringify({ reply, nonce }),
+            msgtype: events.COMMAND_REQUEST
+          };
+          return payload;
         },
-        ""
+        {}
       );
+      debug("sending reply to", nonce, reply, accountMessages);
+      await _client.sendToDevice(
+        events.COMMAND_REPLY,
+        {
+          [nodeAccountUser]: accountMessages
+        },
+        nonce
+      );
+      debug("finished processing command");
     });
+    debug("finish starting bridge");
   };
-  const getRoomId = () => serverRoom.roomId;
   return {
-    startBridge,
-    getRoomId,
-    emitCnEventToRoomId
+    startBridge
   };
 };
 export { cypherNodeMatrixBridge };

@@ -66,52 +66,60 @@ var v4_1 = __importDefault(require("uuid/v4"));
 var debug_1 = __importDefault(require("debug"));
 var events_1 = require("events");
 var matrixUtil_1 = require("../lib/matrixUtil");
-var debug = debug_1.default("cypherNodeMatrixTransport:");
+var constants_1 = require("../constants");
+var debug = debug_1.default("sifir:transport");
 var cypherNodeMatrixTransport = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.roomId, roomId = _c === void 0 ? "" : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e;
+    var _b = _a === void 0 ? {} : _a, _c = _b.nodeDeviceId, nodeDeviceId = _c === void 0 ? "" : _c, _d = _b.nodeAccountUser, nodeAccountUser = _d === void 0 ? "" : _d, _e = _b.client, client = _e === void 0 ? matrixUtil_1.getSyncMatrixClient() : _e, _f = _b.emitter, emitter = _f === void 0 ? new events_1.EventEmitter() : _f, _g = _b.msgTimeout, msgTimeout = _g === void 0 ? 30000 : _g;
     return __awaiter(_this, void 0, void 0, function () {
-        var matrixClient, transportRoom, _commandQueue, _sendCommand, get, post, getMatrixClient;
+        var matrixClient, _commandQueue, _sendCommand, get, post;
         var _this = this;
-        return __generator(this, function (_f) {
-            switch (_f.label) {
+        return __generator(this, function (_h) {
+            switch (_h.label) {
                 case 0:
-                    if (!roomId)
-                        throw "Must provide a room for the transport";
+                    // FIXME types here
+                    // } = {}): Promise<CypherNodeTransport & { getMatrixClient: Function }> => {
+                    if (!nodeDeviceId || !nodeAccountUser)
+                        throw "Must provide device id to send commands to ";
                     return [4 /*yield*/, client];
                 case 1:
-                    matrixClient = _f.sent();
-                    return [4 /*yield*/, matrixClient.joinRoom(roomId)];
-                case 2:
-                    transportRoom = _f.sent();
-                    debug("Transport in room", transportRoom.roomId);
+                    matrixClient = _h.sent();
                     // Setup room lsner, re-emits room commands as nonce events on emitter:w
-                    matrixClient.on("Room.timeline", function (event, room, toStartOfTimeline) {
-                        // we know we only want to respond to messages
-                        if (event.getType() !== "m.room.cypherNodeCommand")
+                    matrixClient.on("toDeviceEvent", function (event) {
+                        // // we know we only want to respond to messages
+                        if (event.getType() !== constants_1.events.COMMAND_REPLY)
                             return;
-                        // we are only intested in messages for our room
-                        if (event.getRoomId() === transportRoom.roomId) {
-                            var _a = event.getContent(), body = _a.body, msgtype = _a.msgtype;
-                            // Make sure this is reply not echo
-                            if (msgtype !== "m.commandReply")
-                                return;
-                            var _b = JSON.parse(body), nonce = _b.nonce, reply = _b.reply;
-                            emitter.emit(nonce, __assign({}, reply));
+                        debug(constants_1.events.COMMAND_REPLY, event.getContent());
+                        if (event.getSender() !== nodeAccountUser) {
+                            // TODO should send message to user phone in this cas
+                            console.error("Got command reply from a different account!");
+                            return;
                         }
+                        var _a = event.getContent(), body = _a.body, msgtype = _a.msgtype;
+                        // Make sure this is reply not echo
+                        // if (msgtype !== "m.commandReply") return;
+                        var _b = JSON.parse(body), nonce = _b.nonce, reply = _b.reply;
+                        emitter.emit(nonce, __assign({}, reply));
                     });
                     _commandQueue = async_1.queue(function (_a) {
                         var method = _a.method, command = _a.command, param = _a.param, nonce = _a.nonce;
                         return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_b) {
-                                switch (_b.label) {
+                            var payload;
+                            var _b, _c;
+                            return __generator(this, function (_d) {
+                                switch (_d.label) {
                                     case 0:
-                                        debug("Transport::Command queue sending", method, command, nonce);
-                                        return [4 /*yield*/, matrixClient.sendEvent(roomId, "m.room.cypherNodeCommand", {
-                                                body: JSON.stringify({ method: method, command: command, param: param, nonce: nonce }),
-                                                msgtype: "m.commandRequest"
-                                            }, "")];
+                                        payload = (_b = {},
+                                            _b[nodeAccountUser] = (_c = {},
+                                                _c[nodeDeviceId] = {
+                                                    body: JSON.stringify({ method: method, command: command, param: param, nonce: nonce }),
+                                                    msgtype: constants_1.events.COMMAND_REQUEST
+                                                },
+                                                _c),
+                                            _b);
+                                        debug("Transport::Command queue sending", method, command, nonce, payload);
+                                        return [4 /*yield*/, matrixClient.sendToDevice(constants_1.events.COMMAND_REQUEST, payload, nonce)];
                                     case 1:
-                                        _b.sent();
+                                        _d.sent();
                                         return [2 /*return*/];
                                 }
                             });
@@ -125,7 +133,7 @@ var cypherNodeMatrixTransport = function (_a) {
                                 rej({
                                     err: "Message " + nonce.slice(0, 4) + "-" + nonce.slice(-4) + " " + method + ":" + command + " timedout"
                                 });
-                            }, 30000);
+                            }, msgTimeout);
                             emitter.once(nonce, function (_a) {
                                 var err = _a.err, data = __rest(_a, ["err"]);
                                 clearTimeout(timeOut);
@@ -146,8 +154,7 @@ var cypherNodeMatrixTransport = function (_a) {
                     post = function (command, payload) {
                         return _sendCommand({ method: "POST", command: command, payload: payload });
                     };
-                    getMatrixClient = function () { return matrixClient; };
-                    return [2 /*return*/, { get: get, post: post, getMatrixClient: getMatrixClient }];
+                    return [2 /*return*/, { get: get, post: post }];
             }
         });
     });

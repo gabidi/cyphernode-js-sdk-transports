@@ -16,7 +16,6 @@
     "ava": "^2.4.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "test:integration": "NODE_TLS_REJECT_UNAUTHORIZED=0 node -r dotenv/config ./node_modules/ava/cli.js ./src/integrationTests/*.spec.js"
   },
   "repository": {

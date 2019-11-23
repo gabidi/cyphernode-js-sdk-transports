@@ -41,99 +41,102 @@ var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 // FIXME update this on next cyphernode sdk release
 var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
-var v4_1 = __importDefault(require("uuid/v4"));
 var debug_1 = __importDefault(require("debug"));
 var matrixUtil_1 = require("../lib/matrixUtil");
-var debug = debug_1.default("cypherNodeMatrixServer");
+var constants_1 = require("../constants");
+var debug = debug_1.default("sifir:bridge");
 var cypherNodeMatrixBridge = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.client, client = _c === void 0 ? matrixUtil_1.getSyncMatrixClient() : _c, _d = _b.transport, transport = _d === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _d;
+    var _b = _a === void 0 ? {} : _a, _c = _b.nodeAccountUser, nodeAccountUser = _c === void 0 ? "" : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.transport, transport = _e === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _e;
     var serverRoom;
-    /**
-     * @todo Flow
-     * 1. start a channel that we use to intiate with user -> qrcode(server,channel,key)
-     * 2. user logs in server, channel and sends key
-     * 3. server checks if key is valid and calls startServer({inviteUser}) which creates a private channel for that user to start connecting to their cyphernode
-     */
     var startBridge = function (_a) {
-        var _b = (_a === void 0 ? {} : _a).inviteUser, inviteUser = _b === void 0 ? [] : _b;
+        var _b = (_a === void 0 ? {} : _a).authorizedDevices, authorizedDevices = _b === void 0 ? [] : _b;
         return __awaiter(_this, void 0, void 0, function () {
-            var get, post, _room;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var get, post, _client, _c;
+            var _this = this;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
+                        debug("starting bridge", authorizedDevices);
                         get = transport.get, post = transport.post;
-                        return [4 /*yield*/, client.createRoom({
-                                invite: inviteUser,
-                                visibility: "private",
-                                name: "cyphernode-" + v4_1.default(),
-                                room_alias_name: "cyphernode-" + v4_1.default()
-                            })];
+                        if (!client.then) return [3 /*break*/, 2];
+                        return [4 /*yield*/, client];
                     case 1:
-                        _room = _c.sent();
-                        return [4 /*yield*/, client.joinRoom(_room.room_id)];
+                        _c = _d.sent();
+                        return [3 /*break*/, 3];
                     case 2:
-                        serverRoom = _c.sent();
-                        debug("Start Server _room", serverRoom.roomId);
-                        client.on("Room.timeline", function (event, room, toStartOfTimeline) {
-                            return __awaiter(this, void 0, void 0, function () {
-                                var _a, nonce, method, command, _b, param, reply, _c;
-                                return __generator(this, function (_d) {
-                                    switch (_d.label) {
-                                        case 0:
-                                            // we know we only want to respond to command
-                                            if (event.getType() !== "m.room.cypherNodeCommand") {
-                                                return [2 /*return*/];
-                                            }
-                                            // we are only intested in cyphernode.commnads for our room
-                                            if (event.getRoomId() !== _room.room_id)
-                                                return [2 /*return*/];
-                                            if (event.getContent().msgtype !== "m.commandRequest")
-                                                return [2 /*return*/];
-                                            debug("Server::Got message", event.getContent());
-                                            client.sendTyping(_room.room_id, true);
-                                            _a = JSON.parse(
-                                            // note only body is JSON string
-                                            event.getContent().body), nonce = _a.nonce, method = _a.method, command = _a.command, _b = _a.param, param = _b === void 0 ? null : _b;
-                                            _c = method;
-                                            switch (_c) {
-                                                case "GET": return [3 /*break*/, 1];
-                                                case "POST": return [3 /*break*/, 3];
-                                            }
-                                            return [3 /*break*/, 5];
-                                        case 1: return [4 /*yield*/, get(command, param)];
-                                        case 2:
-                                            reply = _d.sent();
-                                            return [3 /*break*/, 6];
-                                        case 3: return [4 /*yield*/, post(command, param)];
-                                        case 4:
-                                            reply = _d.sent();
-                                            return [3 /*break*/, 6];
-                                        case 5:
-                                            console.error("Unknown method", method);
+                        _c = client;
+                        _d.label = 3;
+                    case 3:
+                        _client = _c;
+                        _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
+                            var content, _a, method, command, _b, param, nonce, reply, _c, devicesConnected, accountMessages;
+                            var _d;
+                            return __generator(this, function (_e) {
+                                switch (_e.label) {
+                                    case 0:
+                                        debug("got event", event.getType(), event.getSender());
+                                        if (event.getType() !== constants_1.events.COMMAND_REQUEST) {
                                             return [2 /*return*/];
-                                        case 6:
-                                            debug("Server::Send Event", nonce, reply);
-                                            return [4 /*yield*/, client.sendEvent(serverRoom.roomId, "m.room.cypherNodeCommand", {
-                                                    body: JSON.stringify({ nonce: nonce, reply: reply }),
-                                                    msgtype: "m.commandReply"
-                                                }, "")];
-                                        case 7:
-                                            _d.sent();
+                                        }
+                                        if (event.getSender() !== nodeAccountUser) {
+                                            // TODO should send message to user phone in this cas
+                                            console.error("Got command from a different account!");
                                             return [2 /*return*/];
-                                    }
-                                });
+                                        }
+                                        content = event.getContent();
+                                        debug("got command!", content);
+                                        _a = JSON.parse(content.body), method = _a.method, command = _a.command, _b = _a.param, param = _b === void 0 ? null : _b, nonce = _a.nonce;
+                                        _c = method;
+                                        switch (_c) {
+                                            case "GET": return [3 /*break*/, 1];
+                                            case "POST": return [3 /*break*/, 3];
+                                        }
+                                        return [3 /*break*/, 5];
+                                    case 1:
+                                        debug("processing get", command);
+                                        return [4 /*yield*/, get(command, param)];
+                                    case 2:
+                                        reply = _e.sent();
+                                        return [3 /*break*/, 6];
+                                    case 3:
+                                        debug("processing post", command);
+                                        return [4 /*yield*/, post(command, param)];
+                                    case 4:
+                                        reply = _e.sent();
+                                        return [3 /*break*/, 6];
+                                    case 5:
+                                        console.error("Unknown method", method);
+                                        return [2 /*return*/];
+                                    case 6: return [4 /*yield*/, _client.getDevices()];
+                                    case 7:
+                                        devicesConnected = _e.sent();
+                                        accountMessages = devicesConnected.devices.reduce(function (payload, _a) {
+                                            var device_id = _a.device_id;
+                                            payload[device_id] = {
+                                                body: JSON.stringify({ reply: reply, nonce: nonce }),
+                                                msgtype: constants_1.events.COMMAND_REQUEST
+                                            };
+                                            return payload;
+                                        }, {});
+                                        debug("sending reply to", nonce, reply, accountMessages);
+                                        return [4 /*yield*/, _client.sendToDevice(constants_1.events.COMMAND_REPLY, (_d = {},
+                                                _d[nodeAccountUser] = accountMessages,
+                                                _d), nonce)];
+                                    case 8:
+                                        _e.sent();
+                                        debug("finished processing command");
+                                        return [2 /*return*/];
+                                }
                             });
-                        });
+                        }); });
+                        debug("finish starting bridge");
                         return [2 /*return*/];
                 }
             });
         });
     };
-    var getRoomId = function () { return serverRoom.roomId; };
     return {
-        startBridge: startBridge,
-        getRoomId: getRoomId,
-        emitCnEventToRoomId: emitCnEventToRoomId
+        startBridge: startBridge
     };
 };
 exports.cypherNodeMatrixBridge = cypherNodeMatrixBridge;

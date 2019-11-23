@@ -43,26 +43,27 @@ var matrix_js_sdk_1 = __importDefault(require("matrix-js-sdk"));
 var debug_1 = __importDefault(require("debug"));
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.user, user = _c === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _c, _d = _b.password, password = _d === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _d, _e = _b.baseUrl, baseUrl = _e === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _e;
+    var _b = _a === void 0 ? {} : _a, _c = _b.user, user = _c === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _c, _d = _b.password, password = _d === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _d, _e = _b.baseUrl, baseUrl = _e === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _e, _f = _b.deviceId, deviceId = _f === void 0 ? undefined : _f;
     return __awaiter(_this, void 0, void 0, function () {
         var matrixClient, syncFailCount;
-        return __generator(this, function (_f) {
-            switch (_f.label) {
+        return __generator(this, function (_g) {
+            switch (_g.label) {
                 case 0:
                     debug("Conneting to", baseUrl, user);
                     return [4 /*yield*/, matrix_js_sdk_1.default.createClient({
                             baseUrl: baseUrl,
-                            initialSyncLimit: 10,
+                            initialSyncLimit: 100,
                             timelineSupport: true
                         })];
                 case 1:
-                    matrixClient = _f.sent();
+                    matrixClient = _g.sent();
                     return [4 /*yield*/, matrixClient.login("m.login.password", {
                             user: user,
-                            password: password
+                            password: password,
+                            device_id: deviceId
                         })];
                 case 2:
-                    _f.sent();
+                    _g.sent();
                     matrixClient.startClient();
                     syncFailCount = 0;
                     return [2 /*return*/, new Promise(function (res, rej) {
@@ -90,10 +91,11 @@ var getSyncMatrixClient = function (_a) {
                                     }
                                 }
                                 else if (syncState === "SYNCING") {
-                                    // update UI to remove any "Connection Lost" message
+                                    debug("client is in SYNCING state");
                                     syncFailCount = 0;
                                 }
                                 else if (syncState === "PREPARED") {
+                                    debug("client is in PREPARED state");
                                     res(matrixClient);
                                 }
                             });
