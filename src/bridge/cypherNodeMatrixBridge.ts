@@ -16,8 +16,11 @@ const cypherNodeMatrixBridge = ({
   startBridge: Function;
 } => {
   let serverRoom;
-  const startBridge = async ({ authorizedDevices = [] } = {}) => {
-    debug("starting bridge", authorizedDevices);
+  const startBridge = async ({
+    signedRequestsOnly = true,
+    signingKeys = []
+  } = {}) => {
+    debug("starting bridge", signedRequestsOnly);
     const { get, post } = transport;
     const _client = client.then ? await client : client;
     _client.on("toDeviceEvent", async event => {
@@ -32,6 +35,12 @@ const cypherNodeMatrixBridge = ({
       }
       const content = event.getContent();
       debug("got command!", content);
+      if (signedRequestsOnly) {
+        const { sig, deviceId } = content;
+        // Load the devices rsk
+        //
+        // TODO 1. validate RSK key is valid , 2. singature with rsk is valid
+      }
       const { method, command, param = null, nonce } = JSON.parse(content.body);
       let reply;
       switch (method) {

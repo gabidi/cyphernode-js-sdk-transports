@@ -49,27 +49,27 @@ var cypherNodeMatrixBridge = function (_a) {
     var _b = _a === void 0 ? {} : _a, _c = _b.nodeAccountUser, nodeAccountUser = _c === void 0 ? "" : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.transport, transport = _e === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _e;
     var serverRoom;
     var startBridge = function (_a) {
-        var _b = (_a === void 0 ? {} : _a).authorizedDevices, authorizedDevices = _b === void 0 ? [] : _b;
+        var _b = _a === void 0 ? {} : _a, _c = _b.signedRequestsOnly, signedRequestsOnly = _c === void 0 ? true : _c, _d = _b.signingKeys, signingKeys = _d === void 0 ? [] : _d;
         return __awaiter(_this, void 0, void 0, function () {
-            var get, post, _client, _c;
+            var get, post, _client, _e;
             var _this = this;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            return __generator(this, function (_f) {
+                switch (_f.label) {
                     case 0:
-                        debug("starting bridge", authorizedDevices);
+                        debug("starting bridge", signedRequestsOnly);
                         get = transport.get, post = transport.post;
                         if (!client.then) return [3 /*break*/, 2];
                         return [4 /*yield*/, client];
                     case 1:
-                        _c = _d.sent();
+                        _e = _f.sent();
                         return [3 /*break*/, 3];
                     case 2:
-                        _c = client;
-                        _d.label = 3;
+                        _e = client;
+                        _f.label = 3;
                     case 3:
-                        _client = _c;
+                        _client = _e;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var content, _a, method, command, _b, param, nonce, reply, _c, devicesConnected, accountMessages;
+                            var content, sig, deviceId, _a, method, command, _b, param, nonce, reply, _c, devicesConnected, accountMessages;
                             var _d;
                             return __generator(this, function (_e) {
                                 switch (_e.label) {
@@ -85,6 +85,12 @@ var cypherNodeMatrixBridge = function (_a) {
                                         }
                                         content = event.getContent();
                                         debug("got command!", content);
+                                        if (signedRequestsOnly) {
+                                            sig = content.sig, deviceId = content.deviceId;
+                                            // Load the devices rsk
+                                            //
+                                            // TODO 1. validate RSK key is valid , 2. singature with rsk is valid
+                                        }
                                         _a = JSON.parse(content.body), method = _a.method, command = _a.command, _b = _a.param, param = _b === void 0 ? null : _b, nonce = _a.nonce;
                                         _c = method;
                                         switch (_c) {

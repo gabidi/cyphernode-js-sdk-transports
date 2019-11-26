@@ -28,8 +28,6 @@ const cypherNodeMatrixTransport = async ({
       return;
     }
     const { body, msgtype } = event.getContent();
-    // Make sure this is reply not echo
-    // if (msgtype !== "m.commandReply") return;
     const { nonce, reply } = JSON.parse(body);
     emitter.emit(nonce, { ...reply });
   });

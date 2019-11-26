@@ -95,8 +95,6 @@ var cypherNodeMatrixTransport = function (_a) {
                             return;
                         }
                         var _a = event.getContent(), body = _a.body, msgtype = _a.msgtype;
-                        // Make sure this is reply not echo
-                        // if (msgtype !== "m.commandReply") return;
                         var _b = JSON.parse(body), nonce = _b.nonce, reply = _b.reply;
                         emitter.emit(nonce, __assign({}, reply));
                     });
