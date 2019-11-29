@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -34,6 +45,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -43,27 +65,24 @@ var matrix_js_sdk_1 = __importDefault(require("matrix-js-sdk"));
 var debug_1 = __importDefault(require("debug"));
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.user, user = _c === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _c, _d = _b.password, password = _d === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _d, _e = _b.baseUrl, baseUrl = _e === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _e, _f = _b.deviceId, deviceId = _f === void 0 ? undefined : _f;
+    if (_a === void 0) { _a = {}; }
     return __awaiter(_this, void 0, void 0, function () {
         var matrixClient, syncFailCount;
-        return __generator(this, function (_g) {
-            switch (_g.label) {
+        var _b = _a.user, user = _b === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId"]);
+        return __generator(this, function (_f) {
+            switch (_f.label) {
                 case 0:
                     debug("Conneting to", baseUrl, user);
-                    return [4 /*yield*/, matrix_js_sdk_1.default.createClient({
-                            baseUrl: baseUrl,
-                            initialSyncLimit: 100,
-                            timelineSupport: true
-                        })];
+                    return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true }, opts))];
                 case 1:
-                    matrixClient = _g.sent();
+                    matrixClient = _f.sent();
                     return [4 /*yield*/, matrixClient.login("m.login.password", {
                             user: user,
                             password: password,
                             device_id: deviceId
                         })];
                 case 2:
-                    _g.sent();
+                    _f.sent();
                     matrixClient.startClient();
                     syncFailCount = 0;
                     return [2 /*return*/, new Promise(function (res, rej) {
