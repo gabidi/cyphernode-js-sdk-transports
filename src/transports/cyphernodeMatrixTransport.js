@@ -67,27 +67,26 @@ var debug_1 = __importDefault(require("debug"));
 var events_1 = require("events");
 var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
-var debug = debug_1.default("sifir:transport");
 var cypherNodeMatrixTransport = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.nodeDeviceId, nodeDeviceId = _c === void 0 ? "" : _c, _d = _b.nodeAccountUser, nodeAccountUser = _d === void 0 ? "" : _d, _e = _b.client, client = _e === void 0 ? matrixUtil_1.getSyncMatrixClient() : _e, _f = _b.emitter, emitter = _f === void 0 ? new events_1.EventEmitter() : _f, _g = _b.msgTimeout, msgTimeout = _g === void 0 ? 30000 : _g;
+    var _b = _a === void 0 ? {} : _a, _c = _b.nodeDeviceId, nodeDeviceId = _c === void 0 ? "" : _c, _d = _b.nodeAccountUser, nodeAccountUser = _d === void 0 ? "" : _d, _e = _b.client, client = _e === void 0 ? matrixUtil_1.getSyncMatrixClient() : _e, _f = _b.emitter, emitter = _f === void 0 ? new events_1.EventEmitter() : _f, _g = _b.msgTimeout, msgTimeout = _g === void 0 ? 30000 : _g, _h = _b.debug, debug = _h === void 0 ? debug_1.default("sifir:transport") : _h;
     return __awaiter(_this, void 0, void 0, function () {
-        var matrixClient, _h, _commandQueue, _sendCommand, get, post;
+        var matrixClient, _j, _commandQueue, _sendCommand, get, post;
         var _this = this;
-        return __generator(this, function (_j) {
-            switch (_j.label) {
+        return __generator(this, function (_k) {
+            switch (_k.label) {
                 case 0:
                     if (!nodeDeviceId || !nodeAccountUser)
                         throw "Must provide device id to send commands to ";
                     if (!client.then) return [3 /*break*/, 2];
                     return [4 /*yield*/, client];
                 case 1:
-                    _h = _j.sent();
+                    _j = _k.sent();
                     return [3 /*break*/, 3];
                 case 2:
-                    _h = client;
-                    _j.label = 3;
+                    _j = client;
+                    _k.label = 3;
                 case 3:
-                    matrixClient = _h;
+                    matrixClient = _j;
                     // Setup room lsner, re-emits room commands as nonce events on emitter:w
                     matrixClient.on("toDeviceEvent", function (event) {
                         // // we know we only want to respond to messages

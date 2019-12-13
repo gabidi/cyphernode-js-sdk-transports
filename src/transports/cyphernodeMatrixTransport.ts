@@ -4,13 +4,13 @@ import _debug from "debug";
 import { EventEmitter } from "events";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";
-const debug = _debug("sifir:transport");
 const cypherNodeMatrixTransport = async ({
   nodeDeviceId = "",
   nodeAccountUser = "",
   client = getSyncMatrixClient(),
   emitter = new EventEmitter(),
-  msgTimeout = 30000
+  msgTimeout = 30000,
+  debug = _debug("sifir:transport")
 } = {}): Promise<{ get: Function; post: Function }> => {
   if (!nodeDeviceId || !nodeAccountUser)
     throw "Must provide device id to send commands to ";
