@@ -12,11 +12,9 @@ const cypherNodeMatrixTransport = async ({
   emitter = new EventEmitter(),
   msgTimeout = 30000
 } = {}): Promise<{ get: Function; post: Function }> => {
-  // FIXME types here
-  // } = {}): Promise<CypherNodeTransport & { getMatrixClient: Function }> => {
   if (!nodeDeviceId || !nodeAccountUser)
     throw "Must provide device id to send commands to ";
-  const matrixClient = await client;
+  const matrixClient = client.then ? await client : client;
   // Setup room lsner, re-emits room commands as nonce events on emitter:w
   matrixClient.on("toDeviceEvent", event => {
     // // we know we only want to respond to messages

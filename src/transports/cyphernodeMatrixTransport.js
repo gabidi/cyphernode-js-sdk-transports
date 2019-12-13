@@ -71,18 +71,23 @@ var debug = debug_1.default("sifir:transport");
 var cypherNodeMatrixTransport = function (_a) {
     var _b = _a === void 0 ? {} : _a, _c = _b.nodeDeviceId, nodeDeviceId = _c === void 0 ? "" : _c, _d = _b.nodeAccountUser, nodeAccountUser = _d === void 0 ? "" : _d, _e = _b.client, client = _e === void 0 ? matrixUtil_1.getSyncMatrixClient() : _e, _f = _b.emitter, emitter = _f === void 0 ? new events_1.EventEmitter() : _f, _g = _b.msgTimeout, msgTimeout = _g === void 0 ? 30000 : _g;
     return __awaiter(_this, void 0, void 0, function () {
-        var matrixClient, _commandQueue, _sendCommand, get, post;
+        var matrixClient, _h, _commandQueue, _sendCommand, get, post;
         var _this = this;
-        return __generator(this, function (_h) {
-            switch (_h.label) {
+        return __generator(this, function (_j) {
+            switch (_j.label) {
                 case 0:
-                    // FIXME types here
-                    // } = {}): Promise<CypherNodeTransport & { getMatrixClient: Function }> => {
                     if (!nodeDeviceId || !nodeAccountUser)
                         throw "Must provide device id to send commands to ";
+                    if (!client.then) return [3 /*break*/, 2];
                     return [4 /*yield*/, client];
                 case 1:
-                    matrixClient = _h.sent();
+                    _h = _j.sent();
+                    return [3 /*break*/, 3];
+                case 2:
+                    _h = client;
+                    _j.label = 3;
+                case 3:
+                    matrixClient = _h;
                     // Setup room lsner, re-emits room commands as nonce events on emitter:w
                     matrixClient.on("toDeviceEvent", function (event) {
                         // // we know we only want to respond to messages

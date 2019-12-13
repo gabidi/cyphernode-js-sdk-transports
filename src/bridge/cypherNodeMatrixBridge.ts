@@ -43,18 +43,23 @@ const cypherNodeMatrixBridge = ({
       }
       const { method, command, param = null, nonce } = JSON.parse(content.body);
       let reply;
-      switch (method) {
-        case "GET":
-          debug("processing get", command);
-          reply = await get(command, param);
-          break;
-        case "POST":
-          debug("processing post", command);
-          reply = await post(command, param);
-          break;
-        default:
-          console.error("Unknown method", method);
-          return;
+      try {
+        switch (method) {
+          case "GET":
+            debug("processing get", command);
+            reply = await get(command, param);
+            break;
+          case "POST":
+            debug("processing post", command);
+            reply = await post(command, param);
+            break;
+          default:
+            console.error("Unknown command method", method);
+            return;
+        }
+      } catch (error) {
+        debug("Error sending command to transport", error);
+        reply = { error };
       }
       const devicesConnected = await _client.getDevices();
       const accountMessages = devicesConnected.devices.reduce(

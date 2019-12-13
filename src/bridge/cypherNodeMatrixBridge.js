@@ -69,7 +69,7 @@ var cypherNodeMatrixBridge = function (_a) {
                     case 3:
                         _client = _e;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var content, sig, deviceId, _a, method, command, _b, param, nonce, reply, _c, devicesConnected, accountMessages;
+                            var content, sig, deviceId, _a, method, command, _b, param, nonce, reply, _c, error_1, devicesConnected, accountMessages;
                             var _d;
                             return __generator(this, function (_e) {
                                 switch (_e.label) {
@@ -92,29 +92,38 @@ var cypherNodeMatrixBridge = function (_a) {
                                             // TODO 1. validate RSK key is valid , 2. singature with rsk is valid
                                         }
                                         _a = JSON.parse(content.body), method = _a.method, command = _a.command, _b = _a.param, param = _b === void 0 ? null : _b, nonce = _a.nonce;
+                                        _e.label = 1;
+                                    case 1:
+                                        _e.trys.push([1, 8, , 9]);
                                         _c = method;
                                         switch (_c) {
-                                            case "GET": return [3 /*break*/, 1];
-                                            case "POST": return [3 /*break*/, 3];
+                                            case "GET": return [3 /*break*/, 2];
+                                            case "POST": return [3 /*break*/, 4];
                                         }
-                                        return [3 /*break*/, 5];
-                                    case 1:
+                                        return [3 /*break*/, 6];
+                                    case 2:
                                         debug("processing get", command);
                                         return [4 /*yield*/, get(command, param)];
-                                    case 2:
-                                        reply = _e.sent();
-                                        return [3 /*break*/, 6];
                                     case 3:
+                                        reply = _e.sent();
+                                        return [3 /*break*/, 7];
+                                    case 4:
                                         debug("processing post", command);
                                         return [4 /*yield*/, post(command, param)];
-                                    case 4:
-                                        reply = _e.sent();
-                                        return [3 /*break*/, 6];
                                     case 5:
-                                        console.error("Unknown method", method);
+                                        reply = _e.sent();
+                                        return [3 /*break*/, 7];
+                                    case 6:
+                                        console.error("Unknown command method", method);
                                         return [2 /*return*/];
-                                    case 6: return [4 /*yield*/, _client.getDevices()];
-                                    case 7:
+                                    case 7: return [3 /*break*/, 9];
+                                    case 8:
+                                        error_1 = _e.sent();
+                                        debug("Error sending command to transport", error_1);
+                                        reply = { error: error_1 };
+                                        return [3 /*break*/, 9];
+                                    case 9: return [4 /*yield*/, _client.getDevices()];
+                                    case 10:
                                         devicesConnected = _e.sent();
                                         accountMessages = devicesConnected.devices.reduce(function (payload, _a) {
                                             var device_id = _a.device_id;
@@ -128,7 +137,7 @@ var cypherNodeMatrixBridge = function (_a) {
                                         return [4 /*yield*/, _client.sendToDevice(constants_1.events.COMMAND_REPLY, (_d = {},
                                                 _d[nodeAccountUser] = accountMessages,
                                                 _d), nonce)];
-                                    case 8:
+                                    case 11:
                                         _e.sent();
                                         debug("finished processing command");
                                         return [2 /*return*/];
