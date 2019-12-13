@@ -102,7 +102,7 @@ var cypherNodeMatrixTransport = function (_a) {
                         var _b = JSON.parse(body), nonce = _b.nonce, reply = _b.reply;
                         emitter.emit(nonce, __assign({}, reply));
                     });
-                    _commandQueue = async_1.queue(function (_a) {
+                    _commandQueue = async_1.queue(function (_a, cb) {
                         var method = _a.method, command = _a.command, param = _a.param, nonce = _a.nonce;
                         return __awaiter(_this, void 0, void 0, function () {
                             var payload;
@@ -122,6 +122,7 @@ var cypherNodeMatrixTransport = function (_a) {
                                         return [4 /*yield*/, matrixClient.sendToDevice(constants_1.events.COMMAND_REQUEST, payload, nonce)];
                                     case 1:
                                         _d.sent();
+                                        cb();
                                         return [2 /*return*/];
                                 }
                             });

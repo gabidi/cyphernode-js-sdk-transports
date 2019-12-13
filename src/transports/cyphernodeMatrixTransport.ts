@@ -31,7 +31,7 @@ const cypherNodeMatrixTransport = async ({
   });
 
   // Serialize command sending on matrix
-  const _commandQueue = queue(async ({ method, command, param, nonce }) => {
+  const _commandQueue = queue(async ({ method, command, param, nonce }, cb) => {
     const payload = {
       [nodeAccountUser]: {
         [nodeDeviceId]: {
@@ -42,6 +42,7 @@ const cypherNodeMatrixTransport = async ({
     };
     debug("Transport::Command queue sending", method, command, nonce, payload);
     await matrixClient.sendToDevice(events.COMMAND_REQUEST, payload, nonce);
+    cb();
   }, 1);
   // Sends uuids the comand  and sends it to queue
   // @return a promise that fullfills with commands reply (when emitter emits nonce)
