@@ -94,7 +94,7 @@ test("Should be able to send message to devices directly", function (t) { return
                         nodeAccountUser: user,
                         nodeDeviceId: nodeDeviceId,
                         client: transportMatrixClient,
-                        msgTimeout: 1200000
+                        msgTimeout: 8000
                     })];
             case 4:
                 btcClient = _b.apply(void 0, [(_c.transport = _d.sent(),

@@ -68,35 +68,59 @@ var events_1 = require("events");
 var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
 var cypherNodeMatrixTransport = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.nodeDeviceId, nodeDeviceId = _c === void 0 ? "" : _c, _d = _b.nodeAccountUser, nodeAccountUser = _d === void 0 ? "" : _d, _e = _b.client, client = _e === void 0 ? matrixUtil_1.getSyncMatrixClient() : _e, _f = _b.emitter, emitter = _f === void 0 ? new events_1.EventEmitter() : _f, _g = _b.msgTimeout, msgTimeout = _g === void 0 ? 30000 : _g, _h = _b.debug, debug = _h === void 0 ? debug_1.default("sifir:transport") : _h;
+    var _b = _a === void 0 ? {} : _a, _c = _b.nodeDeviceId, nodeDeviceId = _c === void 0 ? "" : _c, _d = _b.nodeAccountUser, nodeAccountUser = _d === void 0 ? "" : _d, _e = _b.client, client = _e === void 0 ? matrixUtil_1.getSyncMatrixClient() : _e, _f = _b.emitter, emitter = _f === void 0 ? new events_1.EventEmitter() : _f, _g = _b.msgTimeout, msgTimeout = _g === void 0 ? 30000 : _g, _h = _b.maxCmdConcurrency, maxCmdConcurrency = _h === void 0 ? 2 : _h, _j = _b.acceptVerifiedDeviceOnly, acceptVerifiedDeviceOnly = _j === void 0 ? true : _j, _k = _b.acceptEncryptedEventsOnly, acceptEncryptedEventsOnly = _k === void 0 ? true : _k, _l = _b.log, log = _l === void 0 ? debug_1.default("sifir:transport") : _l;
     return __awaiter(_this, void 0, void 0, function () {
-        var matrixClient, _j, _commandQueue, _sendCommand, get, post;
+        var matrixClient, _m, _commandQueue, _sendCommand, get, post;
         var _this = this;
-        return __generator(this, function (_k) {
-            switch (_k.label) {
+        return __generator(this, function (_o) {
+            switch (_o.label) {
                 case 0:
                     if (!nodeDeviceId || !nodeAccountUser)
                         throw "Must provide device id to send commands to ";
                     if (!client.then) return [3 /*break*/, 2];
                     return [4 /*yield*/, client];
                 case 1:
-                    _j = _k.sent();
+                    _m = _o.sent();
                     return [3 /*break*/, 3];
                 case 2:
-                    _j = client;
-                    _k.label = 3;
+                    _m = client;
+                    _o.label = 3;
                 case 3:
-                    matrixClient = _j;
+                    matrixClient = _m;
                     // Setup room lsner, re-emits room commands as nonce events on emitter:w
                     matrixClient.on("toDeviceEvent", function (event) {
                         // // we know we only want to respond to messages
                         if (event.getType() !== constants_1.events.COMMAND_REPLY)
                             return;
-                        debug(constants_1.events.COMMAND_REPLY, event.getContent());
-                        if (event.getSender() !== nodeAccountUser) {
-                            // TODO should send message to user phone in this cas
-                            console.error("Got command reply from a different account!");
+                        log(constants_1.events.COMMAND_REPLY, event.getContent());
+                        var eventSender = event.getSender();
+                        if (eventSender !== nodeAccountUser) {
+                            log("Got command reply from a different account!");
                             return;
+                        }
+                        // if (matrixClient.checkUserTrust(eventSender).isCrossSigningVerified()) {
+                        // log("User is not trusted!");
+                        // }
+                        // Check if device is verified
+                        if (acceptVerifiedDeviceOnly) {
+                            var senderKey = event.getSenderKey();
+                            // Check our accept device keys ? Maybe this is the key to send during pairing ?
+                            if (matrixClient
+                                .checkDeviceTrust(eventSender, nodeDeviceId)
+                                .isCrossSigningVerified()) {
+                                log("[ERROR] Recieved commmand reply from unVerified device!", event.getDate(), event.getId(), event.getSender());
+                                return;
+                            }
+                        }
+                        // Check is ecnrypted
+                        if (event.isEncrypted()) {
+                            event.decrypt();
+                        }
+                        else {
+                            if (acceptEncryptedEventsOnly) {
+                                log("[ERROR] Recieved unencrypted commmand reply with encryptedOnly flag on!");
+                                return;
+                            }
                         }
                         var _a = event.getContent(), body = _a.body, msgtype = _a.msgtype;
                         var _b = JSON.parse(body), nonce = _b.nonce, reply = _b.reply;
@@ -118,7 +142,7 @@ var cypherNodeMatrixTransport = function (_a) {
                                                 },
                                                 _c),
                                             _b);
-                                        debug("Transport::Command queue sending", method, command, nonce, payload);
+                                        log("Transport::Command queue sending", method, command, nonce, payload);
                                         return [4 /*yield*/, matrixClient.sendToDevice(constants_1.events.COMMAND_REQUEST, payload, nonce)];
                                     case 1:
                                         _d.sent();
@@ -127,7 +151,7 @@ var cypherNodeMatrixTransport = function (_a) {
                                 }
                             });
                         });
-                    }, 1);
+                    }, maxCmdConcurrency);
                     _sendCommand = function (_a) {
                         var method = _a.method, command = _a.command, payload = _a.payload;
                         var nonce = v4_1.default();

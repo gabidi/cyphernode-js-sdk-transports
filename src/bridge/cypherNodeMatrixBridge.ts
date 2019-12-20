@@ -7,24 +7,29 @@ import { EventEmitter } from "events";
 import _debug from "debug";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";
-const debug = _debug("sifir:bridge");
+import olm from "olm";
+
 const cypherNodeMatrixBridge = ({
   nodeAccountUser = "",
   client = getSyncMatrixClient(),
-  transport = cypherNodeHttpTransport()
+  transport = cypherNodeHttpTransport(),
+  log = _debug("sifir:transport")
 } = {}): {
   startBridge: Function;
 } => {
-  let serverRoom;
   const startBridge = async ({
-    signedRequestsOnly = true,
-    signingKeys = []
+    acceptVerifiedDeviceOnly = true,
+    acceptEncryptedEventsOnly = true
   } = {}) => {
-    debug("starting bridge", signedRequestsOnly);
+    log("starting bridge");
     const { get, post } = transport;
     const _client = client.then ? await client : client;
+
+    if (acceptEncryptedEventsOnly && !_client.isCryptoEnabled())
+      throw "Crypto not enabled on client with required encryption flag set";
+
     _client.on("toDeviceEvent", async event => {
-      debug("got event", event.getType(), event.getSender());
+      log("got event", event.getType(), event.getSender());
       if (event.getType() !== events.COMMAND_REQUEST) {
         return;
       }
@@ -33,24 +38,19 @@ const cypherNodeMatrixBridge = ({
         console.error("Got command from a different account!");
         return;
       }
+      // FIXME HERE check device verd + encryp
       const content = event.getContent();
-      debug("got command!", content);
-      if (signedRequestsOnly) {
-        const { sig, deviceId } = content;
-        // Load the devices rsk
-        //
-        // TODO 1. validate RSK key is valid , 2. singature with rsk is valid
-      }
+      log("got command!", content);
       const { method, command, param = null, nonce } = JSON.parse(content.body);
       let reply;
       try {
         switch (method) {
           case "GET":
-            debug("processing get", command);
+            log("processing get", command);
             reply = await get(command, param);
             break;
           case "POST":
-            debug("processing post", command);
+            log("processing post", command);
             reply = await post(command, param);
             break;
           default:
@@ -58,7 +58,7 @@ const cypherNodeMatrixBridge = ({
             return;
         }
       } catch (error) {
-        debug("Error sending command to transport", error);
+        log("Error sending command to transport", error);
         reply = { error };
       }
       const devicesConnected = await _client.getDevices();
@@ -72,7 +72,7 @@ const cypherNodeMatrixBridge = ({
         },
         {}
       );
-      debug("sending reply to", nonce, reply, accountMessages);
+      log("sending reply to", nonce, reply, accountMessages);
       await _client.sendToDevice(
         events.COMMAND_REPLY,
         {
@@ -80,9 +80,9 @@ const cypherNodeMatrixBridge = ({
         },
         nonce
       );
-      debug("finished processing command");
+      log("finished processing command");
     });
-    debug("finish starting bridge");
+    log("finish starting bridge");
   };
   return {
     startBridge

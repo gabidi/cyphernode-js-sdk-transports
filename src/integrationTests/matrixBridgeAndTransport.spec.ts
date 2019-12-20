@@ -50,7 +50,7 @@ test("Should be able to send message to devices directly", async t => {
       nodeAccountUser: user,
       nodeDeviceId,
       client: transportMatrixClient,
-      msgTimeout: 1200000
+      msgTimeout: 8000
     })
   });
   // Send your request

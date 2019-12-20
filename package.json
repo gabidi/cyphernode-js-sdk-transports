@@ -5,9 +5,10 @@
   "main": "index.js",
   "dependencies": {
     "async": "^3.1.0",
-    "cyphernode-js-sdk": "^0.0.8",
+    "cyphernode-js-sdk": "^0.0.9",
     "debug": "^4.1.1",
     "matrix-js-sdk": "^2.4.2",
+    "node-localstorage": "^2.1.5",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
@@ -17,7 +18,7 @@
     "ava": "^2.4.0"
   },
   "scripts": {
-    "test:integration": "NODE_TLS_REJECT_UNAUTHORIZED=0 node -r dotenv/config ./node_modules/ava/cli.js ./src/integrationTests/*.spec.js"
+    "test:integration": "node -r dotenv/config ./node_modules/ava/cli.js ./src/integrationTests/*.spec.js"
   },
   "repository": {
     "type": "git",

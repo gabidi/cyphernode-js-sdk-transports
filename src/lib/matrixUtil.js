@@ -59,30 +59,51 @@ var __rest = (this && this.__rest) || function (s, e) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var matrix_js_sdk_1 = __importDefault(require("matrix-js-sdk"));
+var olm_1 = __importDefault(require("./olm/package/olm"));
+// This is poop but a current requirement for matrix js sdk
+global.Olm = olm_1.default;
+var matrix_js_sdk_1 = __importStar(require("matrix-js-sdk"));
+exports.MatrixClient = matrix_js_sdk_1.MatrixClient;
 var debug_1 = __importDefault(require("debug"));
+// FIXME not sure if we should default this or force to provide a storage...
+if (typeof localStorage === "undefined" || localStorage === null) {
+    var LocalStorage = require("node-localstorage").LocalStorage;
+    var localStorage = new LocalStorage("./localstorage");
+}
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
     if (_a === void 0) { _a = {}; }
     return __awaiter(_this, void 0, void 0, function () {
         var matrixClient, syncFailCount;
-        var _b = _a.user, user = _b === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId"]);
-        return __generator(this, function (_f) {
-            switch (_f.label) {
+        var _b = _a.user, user = _b === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, _f = _a.sessionStore, sessionStore = _f === void 0 ? new matrix_js_sdk_1.default.WebStorageSessionStore(localStorage) : _f, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId", "sessionStore"]);
+        return __generator(this, function (_g) {
+            switch (_g.label) {
                 case 0:
                     debug("Conneting to", baseUrl, user);
-                    return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true }, opts))];
+                    debug("sss", sessionStore);
+                    return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true, sessionStore: sessionStore,
+                            deviceId: deviceId }, opts))];
                 case 1:
-                    matrixClient = _f.sent();
+                    matrixClient = _g.sent();
                     return [4 /*yield*/, matrixClient.login("m.login.password", {
                             user: user,
                             password: password,
                             device_id: deviceId
                         })];
                 case 2:
-                    _f.sent();
+                    _g.sent();
+                    return [4 /*yield*/, matrixClient.initCrypto()];
+                case 3:
+                    _g.sent();
                     matrixClient.startClient();
                     syncFailCount = 0;
                     return [2 /*return*/, new Promise(function (res, rej) {
@@ -94,14 +115,13 @@ var getSyncMatrixClient = function (_a) {
                                             debug("event.error.data is missing: ", event.error);
                                         }
                                         if (event.error.data.errcode === "M_UNKNOWN_TOKEN") {
-                                            debug("toggleMatrixLoginModal", true);
+                                            // debug("need to login", true);
                                         }
                                         matrixClient.stop();
                                         rej(event);
                                     }
                                     if (syncFailCount >= 3) {
                                         debug("error", "Could not connect to matrix more than 3 time. Disconnecting.");
-                                        // transportMatrixClient.stop();
                                         rej("Matrix client failed to sync more than " + syncFailCount);
                                     }
                                     else {
