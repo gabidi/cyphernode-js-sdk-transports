@@ -73,6 +73,8 @@ var olm_1 = __importDefault(require("./olm/package/olm"));
 global.Olm = olm_1.default;
 var matrix_js_sdk_1 = __importStar(require("matrix-js-sdk"));
 exports.MatrixClient = matrix_js_sdk_1.MatrixClient;
+var crypto_1 = require("matrix-js-sdk/lib/crypto");
+exports.verificationMethods = crypto_1.verificationMethods;
 var debug_1 = __importDefault(require("debug"));
 // FIXME not sure if we should default this or force to provide a storage...
 if (typeof localStorage === "undefined" || localStorage === null) {
@@ -89,7 +91,6 @@ var getSyncMatrixClient = function (_a) {
             switch (_g.label) {
                 case 0:
                     debug("Conneting to", baseUrl, user);
-                    debug("sss", sessionStore);
                     return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true, sessionStore: sessionStore,
                             deviceId: deviceId }, opts))];
                 case 1:

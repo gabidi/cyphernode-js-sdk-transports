@@ -34,6 +34,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var ava_1 = require("ava");
@@ -41,6 +44,8 @@ var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var cypherNodeMatrixBridge_1 = require("../bridge/cypherNodeMatrixBridge");
 var cyphernodeMatrixTransport_1 = require("../transports/cyphernodeMatrixTransport");
 var matrixUtil_1 = require("../lib/matrixUtil");
+var debug_1 = __importDefault(require("debug"));
+var log = debug_1.default("sifir:test");
 var test = ava_1.serial; //FIXME this bullshit, interface for Matrix
 test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -49,18 +54,21 @@ test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
             apiKey: process.env.CYPHERNODE_API_KEY,
             baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
             password: process.env.CYPHERNODE_MATRIX_PASS,
-            user: process.env.CYPHERNODE_MATRIX_USER
+            user: process.env.CYPHERNODE_MATRIX_USER,
+            phoneUser: "@e684968c440ba877d73d8ff62bae31277f8c0279:matrix.sifir.io",
+            phoneUserPassword: "daYw5a7Mwv3nywXOU+67avsrsNySW5EdIEkIupt3vwY"
         };
         return [2 /*return*/];
     });
 }); });
-test("Should be able to send message to devices directly", function (t) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, nodeDeviceId, serverMatrixClient, startBridge, clientId, transportMatrixClient, btcClient, _b, _c, hash;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+test("Should be able to route an e2e message from client transport to lsning bridge", function (t) { return __awaiter(_this, void 0, void 0, function () {
+    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, phoneUser, phoneUserPassword, nodeDeviceId, serverMatrixClient, startBridge, clientId, roomId, transportMatrixClient, transport, serverVerifyPromise, phoneVerifier, btcClient, hash, balance;
+    var _this = this;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                _a = t.context, baseUrl = _a.baseUrl, getSyncMatrixClient = _a.getSyncMatrixClient, apiKey = _a.apiKey, user = _a.user, password = _a.password;
-                nodeDeviceId = "myCyphernode";
+                _a = t.context, baseUrl = _a.baseUrl, getSyncMatrixClient = _a.getSyncMatrixClient, apiKey = _a.apiKey, user = _a.user, password = _a.password, phoneUser = _a.phoneUser, phoneUserPassword = _a.phoneUserPassword;
+                nodeDeviceId = "bridge";
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
                         password: password,
@@ -68,41 +76,90 @@ test("Should be able to send message to devices directly", function (t) { return
                         deviceId: nodeDeviceId
                     })];
             case 1:
-                serverMatrixClient = _d.sent();
+                serverMatrixClient = _b.sent();
                 startBridge = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge({
-                    nodeAccountUser: user,
                     transport: cyphernode_js_sdk_1.cypherNodeHttpTransport(),
                     client: serverMatrixClient
                 }).startBridge;
-                clientId = "myPhone";
+                clientId = "client";
                 return [4 /*yield*/, startBridge({
-                        authorizedDevices: [clientId]
+                        inviteUser: phoneUser
                     })];
             case 2:
-                _d.sent();
+                roomId = _b.sent();
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
-                        password: password,
-                        user: user,
+                        password: phoneUserPassword,
+                        user: phoneUser,
                         deviceId: clientId
                     })];
             case 3:
-                transportMatrixClient = _d.sent();
-                _b = cyphernode_js_sdk_1.btcClient;
-                _c = {};
+                transportMatrixClient = _b.sent();
                 return [4 /*yield*/, cyphernodeMatrixTransport_1.cypherNodeMatrixTransport({
-                        nodeAccountUser: user,
-                        nodeDeviceId: nodeDeviceId,
+                        roomId: roomId,
                         client: transportMatrixClient,
-                        msgTimeout: 8000
+                        msgTimeout: 18000
                     })];
             case 4:
-                btcClient = _b.apply(void 0, [(_c.transport = _d.sent(),
-                        _c)]);
-                return [4 /*yield*/, btcClient.getBestBlockHash()];
+                transport = _b.sent();
+                // Verify devices
+                serverMatrixClient.setGlobalBlacklistUnverifiedDevices(true);
+                transportMatrixClient.setGlobalBlacklistUnverifiedDevices(true);
+                serverVerifyPromise = new Promise(function (res, rej) {
+                    serverMatrixClient.on("Room.timeline", function (e) { return __awaiter(_this, void 0, void 0, function () {
+                        var content, serverVerifier;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    content = e.getContent();
+                                    if (!content || content.msgtype !== "m.key.verification.request")
+                                        return [2 /*return*/];
+                                    if (content.to !== serverMatrixClient.getUserId())
+                                        return [2 /*return*/];
+                                    log("got request", content, content.msgtype);
+                                    serverVerifier = serverMatrixClient.acceptVerificationDM(e, matrixUtil_1.verificationMethods.SAS);
+                                    serverVerifier.on("show_sas", function (e) {
+                                        e.confirm();
+                                    });
+                                    return [4 /*yield*/, serverVerifier.verify()];
+                                case 1:
+                                    _a.sent();
+                                    res();
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                });
+                return [4 /*yield*/, transportMatrixClient.requestVerificationDM(user, roomId, [matrixUtil_1.verificationMethods.SAS])];
             case 5:
-                hash = _d.sent();
+                phoneVerifier = _b.sent();
+                phoneVerifier.on("show_sas", function (r) {
+                    r.confirm();
+                });
+                return [4 /*yield*/, Promise.all([phoneVerifier.verify(), serverVerifyPromise])];
+            case 6:
+                _b.sent();
+                // Encrypt room and wait for conifmrionat
+                return [4 /*yield*/, serverMatrixClient.setRoomEncryption(roomId, {
+                        algorithm: "m.megolm.v1.aes-sha2"
+                    })];
+            case 7:
+                // Encrypt room and wait for conifmrionat
+                _b.sent();
+                return [4 /*yield*/, transportMatrixClient.setRoomEncryption(roomId, {
+                        algorithm: "m.megolm.v1.aes-sha2"
+                    })];
+            case 8:
+                _b.sent();
+                btcClient = cyphernode_js_sdk_1.btcClient({ transport: transport });
+                return [4 /*yield*/, btcClient.getBestBlockHash()];
+            case 9:
+                hash = _b.sent();
                 t.true(!!hash.length);
+                return [4 /*yield*/, btcClient.getBalance()];
+            case 10:
+                balance = _b.sent();
+                t.true(!isNaN(balance));
                 return [2 /*return*/];
         }
     });

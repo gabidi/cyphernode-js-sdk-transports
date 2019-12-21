@@ -4,10 +4,8 @@ import _debug from "debug";
 import { EventEmitter } from "events";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";
-import olm from "olm";
 const cypherNodeMatrixTransport = async ({
-  nodeDeviceId = "",
-  nodeAccountUser = "",
+  roomId = null,
   client = getSyncMatrixClient(),
   emitter = new EventEmitter(),
   msgTimeout = 30000,
@@ -16,71 +14,70 @@ const cypherNodeMatrixTransport = async ({
   acceptEncryptedEventsOnly = true,
   log = _debug("sifir:transport")
 } = {}): Promise<{ get: Function; post: Function }> => {
-  if (!nodeDeviceId || !nodeAccountUser)
-    throw "Must provide device id to send commands to ";
+  if (!roomId) throw "Must provide a room for the transport";
   const matrixClient = client.then ? await client : client;
-
-  // Setup room lsner, re-emits room commands as nonce events on emitter:w
-  matrixClient.on("toDeviceEvent", event => {
-    // // we know we only want to respond to messages
-    if (event.getType() !== events.COMMAND_REPLY) return;
-    log(events.COMMAND_REPLY, event.getContent());
-    const eventSender = event.getSender();
-    if (eventSender !== nodeAccountUser) {
-      log("Got command reply from a different account!");
+  const transportRoom = await matrixClient.joinRoom(roomId);
+  log("transport joined room", transportRoom.roomId);
+  matrixClient.on("Event.decrypted", async event => {
+    // matrixClient.on("Room.timeline", (event, room, toStartOfTimeline) => {
+    // we are only intested in messages for our room
+    if (event.getRoomId() !== transportRoom.roomId) return;
+    if (event.getSender() === matrixClient.getUserId()) return;
+    // Check is ecnrypted
+    if (!event.isEncrypted() && acceptEncryptedEventsOnly) {
+      log(
+        "recieved unencrypted commmand reply with encryptedOnly flag on!",
+        event.getType(),
+        event.getContent()
+      );
       return;
     }
-    // if (matrixClient.checkUserTrust(eventSender).isCrossSigningVerified()) {
+
+    // event.once("Event.decrypted", () => {
+    log("decrypted event", event.getSender(), event.getContent());
+    // we know we only want to respond to messages
+    if (event.getType() !== events.COMMAND_REPLY) return;
+    const userVerified = await matrixClient.isEventSenderVerified(event);
+    log("user verified status is", userVerified);
+    // if (matrixClient.checkUserTrust(event.getSender()).isCrossSigningVerified()) {
     // log("User is not trusted!");
     // }
     // Check if device is verified
-    if (acceptVerifiedDeviceOnly) {
-      const senderKey = event.getSenderKey();
-      // Check our accept device keys ? Maybe this is the key to send during pairing ?
-      if (
-        matrixClient
-          .checkDeviceTrust(eventSender, nodeDeviceId)
-          .isCrossSigningVerified()
-      ) {
-        log(
-          "[ERROR] Recieved commmand reply from unVerified device!",
-          event.getDate(),
-          event.getId(),
-          event.getSender()
-        );
-        return;
-      }
-    }
-    // Check is ecnrypted
-    if (event.isEncrypted()) {
-      event.decrypt();
-    } else {
-      if (acceptEncryptedEventsOnly) {
-        log(
-          "[ERROR] Recieved unencrypted commmand reply with encryptedOnly flag on!"
-        );
-        return;
-      }
-    }
+    //if (acceptVerifiedDeviceOnly) {
+    //  const senderKey = event.getSenderKey();
+    //  // Check our accept device keys ? Maybe this is the key to send during pairing ?
+    //  if (
+    //    matrixClient
+    //      .checkDeviceTrust(eventSender, nodeDeviceId)
+    //      .isCrossSigningVerified()
+    //  ) {
+    //    log(
+    //      "[ERROR] Recieved commmand reply from unVerified device!",
+    //      event.getDate(),
+    //      event.getId(),
+    //      event.getSender()
+    //    );
+    //    return;
+    //  }
+    //}
     const { body, msgtype } = event.getContent();
+    // Make sure this is reply not echo
+    if (msgtype !== events.COMMAND_REPLY) return;
     const { nonce, reply } = JSON.parse(body);
     emitter.emit(nonce, { ...reply });
+    // });
   });
 
   // Serialize command sending on matrix
   const _commandQueue = queue(async ({ method, command, param, nonce }, cb) => {
-    const payload = {
-      [nodeAccountUser]: {
-        [nodeDeviceId]: {
-          body: JSON.stringify({ method, command, param, nonce }),
-          msgtype: events.COMMAND_REQUEST
-        }
-      }
-    };
-    log("Transport::Command queue sending", method, command, nonce, payload);
-    await matrixClient.sendToDevice(events.COMMAND_REQUEST, payload, nonce);
+    log("command queue sending", method, command, nonce);
+    await matrixClient.sendEvent(roomId, events.COMMAND_REQUEST, {
+      body: JSON.stringify({ method, command, param, nonce }),
+      msgtype: events.COMMAND_REQUEST
+    });
     cb();
   }, maxCmdConcurrency);
+
   // Sends uuids the comand  and sends it to queue
   // @return a promise that fullfills with commands reply (when emitter emits nonce)
   const _sendCommand = ({

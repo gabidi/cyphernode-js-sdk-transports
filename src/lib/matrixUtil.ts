@@ -2,6 +2,7 @@ import olm from "./olm/package/olm";
 // This is poop but a current requirement for matrix js sdk
 global.Olm = olm;
 import matrix, { MatrixClient } from "matrix-js-sdk";
+import { verificationMethods } from "matrix-js-sdk/lib/crypto";
 import _debug from "debug";
 // FIXME not sure if we should default this or force to provide a storage...
 if (typeof localStorage === "undefined" || localStorage === null) {
@@ -19,7 +20,6 @@ const getSyncMatrixClient = async ({
   ...opts
 } = {}): Promise<MatrixClient> => {
   debug("Conneting to", baseUrl, user);
-  debug("sss", sessionStore);
   const matrixClient = await matrix.createClient({
     baseUrl,
     initialSyncLimit: 100,
@@ -80,4 +80,4 @@ const getSyncMatrixClient = async ({
     );
   });
 };
-export { getSyncMatrixClient, MatrixClient };
+export { getSyncMatrixClient, MatrixClient, verificationMethods };
