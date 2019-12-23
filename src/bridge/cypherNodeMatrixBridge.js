@@ -173,7 +173,8 @@ var cypherNodeMatrixBridge = function (_a) {
         });
     };
     return {
-        startBridge: startBridge
+        startBridge: startBridge,
+        addApprovedDevice: addApprovedDevice
     };
 };
 exports.cypherNodeMatrixBridge = cypherNodeMatrixBridge;

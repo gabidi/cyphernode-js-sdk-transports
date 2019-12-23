@@ -15,6 +15,7 @@ const cypherNodeMatrixBridge = ({
   approvedDeviceList = []
 } = {}): {
   startBridge: Function;
+  addApprovedDevice: Function;
 } => {
   const addApprovedDevice = (device: string) => approvedDeviceList.push(device);
   /**
@@ -96,7 +97,8 @@ const cypherNodeMatrixBridge = ({
     return serverRoom.roomId;
   };
   return {
-    startBridge
+    startBridge,
+    addApprovedDevice
   };
 };
 export { cypherNodeMatrixBridge };
