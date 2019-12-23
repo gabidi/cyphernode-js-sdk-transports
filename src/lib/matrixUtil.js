@@ -73,6 +73,7 @@ var olm_1 = __importDefault(require("./olm/package/olm"));
 global.Olm = olm_1.default;
 var matrix_js_sdk_1 = __importStar(require("matrix-js-sdk"));
 exports.MatrixClient = matrix_js_sdk_1.MatrixClient;
+exports.MatrixEvent = matrix_js_sdk_1.MatrixEvent;
 var crypto_1 = require("matrix-js-sdk/lib/crypto");
 exports.verificationMethods = crypto_1.verificationMethods;
 var debug_1 = __importDefault(require("debug"));
@@ -86,26 +87,28 @@ var getSyncMatrixClient = function (_a) {
     if (_a === void 0) { _a = {}; }
     return __awaiter(_this, void 0, void 0, function () {
         var matrixClient, syncFailCount;
-        var _b = _a.user, user = _b === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, _f = _a.sessionStore, sessionStore = _f === void 0 ? new matrix_js_sdk_1.default.WebStorageSessionStore(localStorage) : _f, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId", "sessionStore"]);
-        return __generator(this, function (_g) {
-            switch (_g.label) {
+        var _b = _a.user, user = _b === void 0 ? process.env.SIFIR_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.SIFIR_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.SIFIR_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, _f = _a.sessionStore, sessionStore = _f === void 0 ? new matrix_js_sdk_1.default.WebStorageSessionStore(localStorage) : _f, _g = _a.acceptVerifiedDevicesOnly, acceptVerifiedDevicesOnly = _g === void 0 ? true : _g, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId", "sessionStore", "acceptVerifiedDevicesOnly"]);
+        return __generator(this, function (_h) {
+            switch (_h.label) {
                 case 0:
                     debug("Conneting to", baseUrl, user);
                     return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true, sessionStore: sessionStore,
                             deviceId: deviceId }, opts))];
                 case 1:
-                    matrixClient = _g.sent();
+                    matrixClient = _h.sent();
                     return [4 /*yield*/, matrixClient.login("m.login.password", {
                             user: user,
                             password: password,
                             device_id: deviceId
                         })];
                 case 2:
-                    _g.sent();
+                    _h.sent();
                     return [4 /*yield*/, matrixClient.initCrypto()];
                 case 3:
-                    _g.sent();
+                    _h.sent();
                     matrixClient.startClient();
+                    if (acceptVerifiedDevicesOnly)
+                        matrixClient.setGlobalBlacklistUnverifiedDevices(true);
                     syncFailCount = 0;
                     return [2 /*return*/, new Promise(function (res, rej) {
                             matrixClient.once("sync", function (syncState, a, event) {

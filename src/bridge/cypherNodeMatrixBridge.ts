@@ -7,28 +7,26 @@ import { EventEmitter } from "events";
 import _debug from "debug";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";
-
+import { verifyEventSenderIsTrusted } from "../lib/helper/verifyEvents";
 const cypherNodeMatrixBridge = ({
   client = getSyncMatrixClient(),
   transport = cypherNodeHttpTransport(),
-  log = _debug("sifir:bridge")
+  log = _debug("sifir:bridge"),
+  approvedDeviceList = []
 } = {}): {
   startBridge: Function;
 } => {
+  const addApprovedDevice = (device: string) => approvedDeviceList.push(device);
   /**
    * Starts the bridge and returns the private roomId the user needs to join
    */
-  const startBridge = async ({
-    inviteUser,
-    acceptVerifiedDeviceOnly = true,
-    acceptEncryptedEventsOnly = true
-  } = {}): Promise<string> => {
+  const startBridge = async ({ inviteUser } = {}): Promise<string> => {
     if (!inviteUser) throw "Cannot start room bridge without user to invite";
     log("starting bridge for user", inviteUser);
     const { get, post } = transport;
     const _client = client.then ? await client : client;
 
-    if (acceptEncryptedEventsOnly && !_client.isCryptoEnabled())
+    if (!_client.isCryptoEnabled())
       throw "Crypto not enabled on client with required encryption flag set";
 
     const _room = await client.createRoom({
@@ -38,10 +36,6 @@ const cypherNodeMatrixBridge = ({
       room_alias_name: `cyphernode-${uuid()}`
     });
     const serverRoom = await client.joinRoom(_room.room_id);
-    // FIXME i think this has to be called after devices are verified
-    //await client.setRoomEncryption(serverRoom.roomId, {
-    //  algorithm: "m.megolm.v1.aes-sha2"
-    //});
 
     log("bridge created and joined new room", serverRoom.roomId);
     _client.on("Event.decrypted", async event => {
@@ -50,7 +44,7 @@ const cypherNodeMatrixBridge = ({
       if (event.getRoomId() !== _room.room_id) return;
       if (event.getSender() === _client.getUserId()) return;
       // Check encryption
-      if (!event.isEncrypted() && acceptEncryptedEventsOnly) {
+      if (!event.isEncrypted()) {
         log(
           "[ERROR] Recieved unencrypted commmand reply with encryptedOnly flag on!",
           event.getType(),
@@ -62,6 +56,12 @@ const cypherNodeMatrixBridge = ({
       log("decrypted event", event.getSender(), event.getContent());
       // we are only intested in cyphernode.commnads for our room
       if (event.getContent().msgtype !== events.COMMAND_REQUEST) return;
+      try {
+        await verifyEventSenderIsTrusted(_client, event, approvedDeviceList);
+      } catch (err) {
+        log("error validating event sender trust", err);
+        return;
+      }
       const { nonce, method, command, param = null } = JSON.parse(
         // note only body is JSON string
         event.getContent().body

@@ -45,18 +45,20 @@ var v4_1 = __importDefault(require("uuid/v4"));
 var debug_1 = __importDefault(require("debug"));
 var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
+var verifyEvents_1 = require("../lib/helper/verifyEvents");
 var cypherNodeMatrixBridge = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.client, client = _c === void 0 ? matrixUtil_1.getSyncMatrixClient() : _c, _d = _b.transport, transport = _d === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _d, _e = _b.log, log = _e === void 0 ? debug_1.default("sifir:bridge") : _e;
+    var _b = _a === void 0 ? {} : _a, _c = _b.client, client = _c === void 0 ? matrixUtil_1.getSyncMatrixClient() : _c, _d = _b.transport, transport = _d === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _d, _e = _b.log, log = _e === void 0 ? debug_1.default("sifir:bridge") : _e, _f = _b.approvedDeviceList, approvedDeviceList = _f === void 0 ? [] : _f;
+    var addApprovedDevice = function (device) { return approvedDeviceList.push(device); };
     /**
      * Starts the bridge and returns the private roomId the user needs to join
      */
     var startBridge = function (_a) {
-        var _b = _a === void 0 ? {} : _a, inviteUser = _b.inviteUser, _c = _b.acceptVerifiedDeviceOnly, acceptVerifiedDeviceOnly = _c === void 0 ? true : _c, _d = _b.acceptEncryptedEventsOnly, acceptEncryptedEventsOnly = _d === void 0 ? true : _d;
+        var inviteUser = (_a === void 0 ? {} : _a).inviteUser;
         return __awaiter(_this, void 0, void 0, function () {
-            var get, post, _client, _e, _room, serverRoom;
+            var get, post, _client, _b, _room, serverRoom;
             var _this = this;
-            return __generator(this, function (_f) {
-                switch (_f.label) {
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         if (!inviteUser)
                             throw "Cannot start room bridge without user to invite";
@@ -65,14 +67,14 @@ var cypherNodeMatrixBridge = function (_a) {
                         if (!client.then) return [3 /*break*/, 2];
                         return [4 /*yield*/, client];
                     case 1:
-                        _e = _f.sent();
+                        _b = _c.sent();
                         return [3 /*break*/, 3];
                     case 2:
-                        _e = client;
-                        _f.label = 3;
+                        _b = client;
+                        _c.label = 3;
                     case 3:
-                        _client = _e;
-                        if (acceptEncryptedEventsOnly && !_client.isCryptoEnabled())
+                        _client = _b;
+                        if (!_client.isCryptoEnabled())
                             throw "Crypto not enabled on client with required encryption flag set";
                         return [4 /*yield*/, client.createRoom({
                                 invite: [inviteUser],
@@ -81,17 +83,13 @@ var cypherNodeMatrixBridge = function (_a) {
                                 room_alias_name: "cyphernode-" + v4_1.default()
                             })];
                     case 4:
-                        _room = _f.sent();
+                        _room = _c.sent();
                         return [4 /*yield*/, client.joinRoom(_room.room_id)];
                     case 5:
-                        serverRoom = _f.sent();
-                        // FIXME i think this has to be called after devices are verified
-                        //await client.setRoomEncryption(serverRoom.roomId, {
-                        //  algorithm: "m.megolm.v1.aes-sha2"
-                        //});
+                        serverRoom = _c.sent();
                         log("bridge created and joined new room", serverRoom.roomId);
                         _client.on("Event.decrypted", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var _a, nonce, method, command, _b, param, reply, _c, error_1;
+                            var err_1, _a, nonce, method, command, _b, param, reply, _c, error_1;
                             return __generator(this, function (_d) {
                                 switch (_d.label) {
                                     case 0:
@@ -102,7 +100,7 @@ var cypherNodeMatrixBridge = function (_a) {
                                         if (event.getSender() === _client.getUserId())
                                             return [2 /*return*/];
                                         // Check encryption
-                                        if (!event.isEncrypted() && acceptEncryptedEventsOnly) {
+                                        if (!event.isEncrypted()) {
                                             log("[ERROR] Recieved unencrypted commmand reply with encryptedOnly flag on!", event.getType(), event.getContent());
                                             return [2 /*return*/];
                                         }
@@ -111,46 +109,58 @@ var cypherNodeMatrixBridge = function (_a) {
                                         // we are only intested in cyphernode.commnads for our room
                                         if (event.getContent().msgtype !== constants_1.events.COMMAND_REQUEST)
                                             return [2 /*return*/];
+                                        _d.label = 1;
+                                    case 1:
+                                        _d.trys.push([1, 3, , 4]);
+                                        return [4 /*yield*/, verifyEvents_1.verifyEventSenderIsTrusted(_client, event, approvedDeviceList)];
+                                    case 2:
+                                        _d.sent();
+                                        return [3 /*break*/, 4];
+                                    case 3:
+                                        err_1 = _d.sent();
+                                        log("error validating event sender trust", err_1);
+                                        return [2 /*return*/];
+                                    case 4:
                                         _a = JSON.parse(
                                         // note only body is JSON string
                                         event.getContent().body), nonce = _a.nonce, method = _a.method, command = _a.command, _b = _a.param, param = _b === void 0 ? null : _b;
-                                        _d.label = 1;
-                                    case 1:
-                                        _d.trys.push([1, 8, , 9]);
+                                        _d.label = 5;
+                                    case 5:
+                                        _d.trys.push([5, 12, , 13]);
                                         _c = method;
                                         switch (_c) {
-                                            case "GET": return [3 /*break*/, 2];
-                                            case "POST": return [3 /*break*/, 4];
+                                            case "GET": return [3 /*break*/, 6];
+                                            case "POST": return [3 /*break*/, 8];
                                         }
-                                        return [3 /*break*/, 6];
-                                    case 2:
+                                        return [3 /*break*/, 10];
+                                    case 6:
                                         log("processing get", command);
                                         return [4 /*yield*/, get(command, param)];
-                                    case 3:
+                                    case 7:
                                         reply = _d.sent();
-                                        return [3 /*break*/, 7];
-                                    case 4:
+                                        return [3 /*break*/, 11];
+                                    case 8:
                                         log("processing post", command);
                                         return [4 /*yield*/, post(command, param)];
-                                    case 5:
+                                    case 9:
                                         reply = _d.sent();
-                                        return [3 /*break*/, 7];
-                                    case 6:
+                                        return [3 /*break*/, 11];
+                                    case 10:
                                         console.error("Unknown command method", method);
                                         return [2 /*return*/];
-                                    case 7: return [3 /*break*/, 9];
-                                    case 8:
+                                    case 11: return [3 /*break*/, 13];
+                                    case 12:
                                         error_1 = _d.sent();
                                         log("Error sending command to transport", error_1);
                                         reply = { error: error_1 };
-                                        return [3 /*break*/, 9];
-                                    case 9:
+                                        return [3 /*break*/, 13];
+                                    case 13:
                                         log("send Event", nonce, reply);
                                         return [4 /*yield*/, _client.sendEvent(serverRoom.roomId, constants_1.events.COMMAND_REPLY, {
                                                 body: JSON.stringify({ nonce: nonce, reply: reply }),
                                                 msgtype: constants_1.events.COMMAND_REPLY
                                             })];
-                                    case 10:
+                                    case 14:
                                         _d.sent();
                                         return [2 /*return*/];
                                 }

@@ -70,9 +70,9 @@ test("Should be able to instantiate a matrix client with axios as it's request h
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, matrixUtil_1.getSyncMatrixClient({
-                    baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
-                    password: process.env.CYPHERNODE_MATRIX_PASS,
-                    user: process.env.CYPHERNODE_MATRIX_USER,
+                    baseUrl: process.env.SIFIR_MATRIX_SERVER,
+                    password: process.env.SIFIR_MATRIX_PASS,
+                    user: process.env.SIFIR_MATRIX_USER,
                     request: function (options, cb) { return __awaiter(_this, void 0, void 0, function () {
                         var opts, resp, err_1;
                         return __generator(this, function (_a) {

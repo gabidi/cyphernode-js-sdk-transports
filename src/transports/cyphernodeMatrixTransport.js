@@ -67,55 +67,64 @@ var debug_1 = __importDefault(require("debug"));
 var events_1 = require("events");
 var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
+var verifyEvents_1 = require("../lib/helper/verifyEvents");
 var cypherNodeMatrixTransport = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.roomId, roomId = _c === void 0 ? null : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _b.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _b.maxCmdConcurrency, maxCmdConcurrency = _g === void 0 ? 2 : _g, _h = _b.acceptVerifiedDeviceOnly, acceptVerifiedDeviceOnly = _h === void 0 ? true : _h, _j = _b.acceptEncryptedEventsOnly, acceptEncryptedEventsOnly = _j === void 0 ? true : _j, _k = _b.log, log = _k === void 0 ? debug_1.default("sifir:transport") : _k;
+    var _b = _a === void 0 ? {} : _a, _c = _b.roomId, roomId = _c === void 0 ? null : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _b.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _b.maxCmdConcurrency, maxCmdConcurrency = _g === void 0 ? 2 : _g, _h = _b.approvedDeviceList, approvedDeviceList = _h === void 0 ? [] : _h, _j = _b.log, log = _j === void 0 ? debug_1.default("sifir:transport") : _j;
     return __awaiter(_this, void 0, void 0, function () {
-        var matrixClient, _l, transportRoom, _commandQueue, _sendCommand, get, post;
+        var matrixClient, _k, transportRoom, _commandQueue, _sendCommand, get, post;
         var _this = this;
-        return __generator(this, function (_m) {
-            switch (_m.label) {
+        return __generator(this, function (_l) {
+            switch (_l.label) {
                 case 0:
-                    if (!roomId)
-                        throw "Must provide a room for the transport";
                     if (!client.then) return [3 /*break*/, 2];
                     return [4 /*yield*/, client];
                 case 1:
-                    _l = _m.sent();
+                    _k = _l.sent();
                     return [3 /*break*/, 3];
                 case 2:
-                    _l = client;
-                    _m.label = 3;
+                    _k = client;
+                    _l.label = 3;
                 case 3:
-                    matrixClient = _l;
+                    matrixClient = _k;
+                    if (!roomId)
+                        throw "Must provide a room for the transport";
+                    if (!matrixClient.isCryptoEnabled())
+                        throw "Crypto not enabled on client with required encryption flag set";
                     return [4 /*yield*/, matrixClient.joinRoom(roomId)];
                 case 4:
-                    transportRoom = _m.sent();
+                    transportRoom = _l.sent();
                     log("transport joined room", transportRoom.roomId);
                     matrixClient.on("Event.decrypted", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                        var userVerified, _a, body, msgtype, _b, nonce, reply;
+                        var err_1, _a, body, msgtype, _b, nonce, reply;
                         return __generator(this, function (_c) {
                             switch (_c.label) {
                                 case 0:
-                                    // matrixClient.on("Room.timeline", (event, room, toStartOfTimeline) => {
                                     // we are only intested in messages for our room
                                     if (event.getRoomId() !== transportRoom.roomId)
                                         return [2 /*return*/];
                                     if (event.getSender() === matrixClient.getUserId())
                                         return [2 /*return*/];
                                     // Check is ecnrypted
-                                    if (!event.isEncrypted() && acceptEncryptedEventsOnly) {
+                                    if (!event.isEncrypted()) {
                                         log("recieved unencrypted commmand reply with encryptedOnly flag on!", event.getType(), event.getContent());
                                         return [2 /*return*/];
                                     }
-                                    // event.once("Event.decrypted", () => {
                                     log("decrypted event", event.getSender(), event.getContent());
                                     // we know we only want to respond to messages
                                     if (event.getType() !== constants_1.events.COMMAND_REPLY)
                                         return [2 /*return*/];
-                                    return [4 /*yield*/, matrixClient.isEventSenderVerified(event)];
+                                    _c.label = 1;
                                 case 1:
-                                    userVerified = _c.sent();
-                                    log("user verified status is", userVerified);
+                                    _c.trys.push([1, 3, , 4]);
+                                    return [4 /*yield*/, verifyEvents_1.verifyEventSenderIsTrusted(matrixClient, event, approvedDeviceList)];
+                                case 2:
+                                    _c.sent();
+                                    return [3 /*break*/, 4];
+                                case 3:
+                                    err_1 = _c.sent();
+                                    log("error validating event sender trust", err_1);
+                                    return [2 /*return*/];
+                                case 4:
                                     _a = event.getContent(), body = _a.body, msgtype = _a.msgtype;
                                     // Make sure this is reply not echo
                                     if (msgtype !== constants_1.events.COMMAND_REPLY)

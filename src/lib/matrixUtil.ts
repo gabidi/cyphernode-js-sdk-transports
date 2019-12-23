@@ -1,7 +1,7 @@
 import olm from "./olm/package/olm";
 // This is poop but a current requirement for matrix js sdk
 global.Olm = olm;
-import matrix, { MatrixClient } from "matrix-js-sdk";
+import matrix, { MatrixClient, MatrixEvent } from "matrix-js-sdk";
 import { verificationMethods } from "matrix-js-sdk/lib/crypto";
 import _debug from "debug";
 // FIXME not sure if we should default this or force to provide a storage...
@@ -12,11 +12,12 @@ if (typeof localStorage === "undefined" || localStorage === null) {
 
 const debug = _debug("matrixutil:");
 const getSyncMatrixClient = async ({
-  user = process.env.CYPHERNODE_MATRIX_USER,
-  password = process.env.CYPHERNODE_MATRIX_PASS,
-  baseUrl = process.env.CYPHERNODE_MATRIX_SERVER,
+  user = process.env.SIFIR_MATRIX_USER,
+  password = process.env.SIFIR_MATRIX_PASS,
+  baseUrl = process.env.SIFIR_MATRIX_SERVER,
   deviceId = undefined,
   sessionStore = new matrix.WebStorageSessionStore(localStorage),
+  acceptVerifiedDevicesOnly = true,
   ...opts
 } = {}): Promise<MatrixClient> => {
   debug("Conneting to", baseUrl, user);
@@ -37,6 +38,8 @@ const getSyncMatrixClient = async ({
   await matrixClient.initCrypto();
 
   matrixClient.startClient();
+  if (acceptVerifiedDevicesOnly)
+    matrixClient.setGlobalBlacklistUnverifiedDevices(true);
   let syncFailCount = 0;
   return new Promise((res, rej) => {
     matrixClient.once(
@@ -80,4 +83,4 @@ const getSyncMatrixClient = async ({
     );
   });
 };
-export { getSyncMatrixClient, MatrixClient, verificationMethods };
+export { getSyncMatrixClient, MatrixClient, MatrixEvent, verificationMethods };

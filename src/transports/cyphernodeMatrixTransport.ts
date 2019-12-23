@@ -4,27 +4,28 @@ import _debug from "debug";
 import { EventEmitter } from "events";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";
+import { verifyEventSenderIsTrusted } from "../lib/helper/verifyEvents";
 const cypherNodeMatrixTransport = async ({
   roomId = null,
   client = getSyncMatrixClient(),
   emitter = new EventEmitter(),
   msgTimeout = 30000,
   maxCmdConcurrency = 2,
-  acceptVerifiedDeviceOnly = true,
-  acceptEncryptedEventsOnly = true,
+  approvedDeviceList = [],
   log = _debug("sifir:transport")
 } = {}): Promise<{ get: Function; post: Function }> => {
-  if (!roomId) throw "Must provide a room for the transport";
   const matrixClient = client.then ? await client : client;
+  if (!roomId) throw "Must provide a room for the transport";
+  if (!matrixClient.isCryptoEnabled())
+    throw "Crypto not enabled on client with required encryption flag set";
   const transportRoom = await matrixClient.joinRoom(roomId);
   log("transport joined room", transportRoom.roomId);
   matrixClient.on("Event.decrypted", async event => {
-    // matrixClient.on("Room.timeline", (event, room, toStartOfTimeline) => {
     // we are only intested in messages for our room
     if (event.getRoomId() !== transportRoom.roomId) return;
     if (event.getSender() === matrixClient.getUserId()) return;
     // Check is ecnrypted
-    if (!event.isEncrypted() && acceptEncryptedEventsOnly) {
+    if (!event.isEncrypted()) {
       log(
         "recieved unencrypted commmand reply with encryptedOnly flag on!",
         event.getType(),
@@ -33,33 +34,16 @@ const cypherNodeMatrixTransport = async ({
       return;
     }
 
-    // event.once("Event.decrypted", () => {
     log("decrypted event", event.getSender(), event.getContent());
     // we know we only want to respond to messages
     if (event.getType() !== events.COMMAND_REPLY) return;
-    const userVerified = await matrixClient.isEventSenderVerified(event);
-    log("user verified status is", userVerified);
-    // if (matrixClient.checkUserTrust(event.getSender()).isCrossSigningVerified()) {
-    // log("User is not trusted!");
-    // }
-    // Check if device is verified
-    //if (acceptVerifiedDeviceOnly) {
-    //  const senderKey = event.getSenderKey();
-    //  // Check our accept device keys ? Maybe this is the key to send during pairing ?
-    //  if (
-    //    matrixClient
-    //      .checkDeviceTrust(eventSender, nodeDeviceId)
-    //      .isCrossSigningVerified()
-    //  ) {
-    //    log(
-    //      "[ERROR] Recieved commmand reply from unVerified device!",
-    //      event.getDate(),
-    //      event.getId(),
-    //      event.getSender()
-    //    );
-    //    return;
-    //  }
-    //}
+
+    try {
+      await verifyEventSenderIsTrusted(matrixClient, event, approvedDeviceList);
+    } catch (err) {
+      log("error validating event sender trust", err);
+      return;
+    }
     const { body, msgtype } = event.getContent();
     // Make sure this is reply not echo
     if (msgtype !== events.COMMAND_REPLY) return;

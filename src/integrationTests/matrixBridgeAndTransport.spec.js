@@ -52,23 +52,24 @@ test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
         t.context = {
             getSyncMatrixClient: matrixUtil_1.getSyncMatrixClient,
             apiKey: process.env.CYPHERNODE_API_KEY,
-            baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
-            password: process.env.CYPHERNODE_MATRIX_PASS,
-            user: process.env.CYPHERNODE_MATRIX_USER,
-            phoneUser: "@e684968c440ba877d73d8ff62bae31277f8c0279:matrix.sifir.io",
-            phoneUserPassword: "daYw5a7Mwv3nywXOU+67avsrsNySW5EdIEkIupt3vwY"
+            baseUrl: process.env.SIFIR_MATRIX_SERVER,
+            password: process.env.SIFIR_MATRIX_PASS,
+            user: process.env.SIFIR_MATRIX_USER,
+            phoneUser: process.env.SIFIR_PHONE_MATRIX_USER,
+            phoneUserPassword: process.env.SIFIR_PHONE_MATRIX_PASS
         };
         return [2 /*return*/];
     });
 }); });
 test("Should be able to route an e2e message from client transport to lsning bridge", function (t) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, phoneUser, phoneUserPassword, nodeDeviceId, serverMatrixClient, startBridge, clientId, roomId, transportMatrixClient, transport, serverVerifyPromise, phoneVerifier, btcClient, hash, balance;
+    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, phoneUser, phoneUserPassword, nodeDeviceId, phoneDeviceId, serverMatrixClient, startBridge, roomId, transportMatrixClient, transport, serverVerifyPromise, phoneVerifier, btcClient, hash, balance;
     var _this = this;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _a = t.context, baseUrl = _a.baseUrl, getSyncMatrixClient = _a.getSyncMatrixClient, apiKey = _a.apiKey, user = _a.user, password = _a.password, phoneUser = _a.phoneUser, phoneUserPassword = _a.phoneUserPassword;
                 nodeDeviceId = "bridge";
+                phoneDeviceId = "client";
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
                         password: password,
@@ -79,9 +80,9 @@ test("Should be able to route an e2e message from client transport to lsning bri
                 serverMatrixClient = _b.sent();
                 startBridge = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge({
                     transport: cyphernode_js_sdk_1.cypherNodeHttpTransport(),
-                    client: serverMatrixClient
+                    client: serverMatrixClient,
+                    approvedDeviceList: [phoneDeviceId]
                 }).startBridge;
-                clientId = "client";
                 return [4 /*yield*/, startBridge({
                         inviteUser: phoneUser
                     })];
@@ -91,20 +92,18 @@ test("Should be able to route an e2e message from client transport to lsning bri
                         baseUrl: baseUrl,
                         password: phoneUserPassword,
                         user: phoneUser,
-                        deviceId: clientId
+                        deviceId: phoneDeviceId
                     })];
             case 3:
                 transportMatrixClient = _b.sent();
                 return [4 /*yield*/, cyphernodeMatrixTransport_1.cypherNodeMatrixTransport({
                         roomId: roomId,
                         client: transportMatrixClient,
-                        msgTimeout: 18000
+                        msgTimeout: 1800,
+                        approvedDeviceList: [nodeDeviceId]
                     })];
             case 4:
                 transport = _b.sent();
-                // Verify devices
-                serverMatrixClient.setGlobalBlacklistUnverifiedDevices(true);
-                transportMatrixClient.setGlobalBlacklistUnverifiedDevices(true);
                 serverVerifyPromise = new Promise(function (res, rej) {
                     serverMatrixClient.on("Room.timeline", function (e) { return __awaiter(_this, void 0, void 0, function () {
                         var content, serverVerifier;

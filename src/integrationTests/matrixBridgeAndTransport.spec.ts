@@ -15,11 +15,11 @@ test.before(async t => {
   t.context = {
     getSyncMatrixClient,
     apiKey: process.env.CYPHERNODE_API_KEY,
-    baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
-    password: process.env.CYPHERNODE_MATRIX_PASS,
-    user: process.env.CYPHERNODE_MATRIX_USER,
-    phoneUser: "@e684968c440ba877d73d8ff62bae31277f8c0279:matrix.sifir.io",
-    phoneUserPassword: "daYw5a7Mwv3nywXOU+67avsrsNySW5EdIEkIupt3vwY"
+    baseUrl: process.env.SIFIR_MATRIX_SERVER,
+    password: process.env.SIFIR_MATRIX_PASS,
+    user: process.env.SIFIR_MATRIX_USER,
+    phoneUser: process.env.SIFIR_PHONE_MATRIX_USER,
+    phoneUserPassword: process.env.SIFIR_PHONE_MATRIX_PASS
   };
 });
 test("Should be able to route an e2e message from client transport to lsning bridge", async t => {
@@ -34,6 +34,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
   } = t.context;
   // Setup server
   const nodeDeviceId = `bridge`;
+  const phoneDeviceId = `client`;
   const serverMatrixClient = await getSyncMatrixClient({
     baseUrl,
     password,
@@ -43,10 +44,10 @@ test("Should be able to route an e2e message from client transport to lsning bri
 
   const { startBridge } = cypherNodeMatrixBridge({
     transport: cypherNodeHttpTransport(),
-    client: serverMatrixClient
+    client: serverMatrixClient,
+    approvedDeviceList: [phoneDeviceId]
   });
 
-  const clientId = `client`;
   const roomId = await startBridge({
     inviteUser: phoneUser
   });
@@ -55,16 +56,14 @@ test("Should be able to route an e2e message from client transport to lsning bri
     baseUrl,
     password: phoneUserPassword,
     user: phoneUser,
-    deviceId: clientId
+    deviceId: phoneDeviceId
   });
   const transport = await cypherNodeMatrixTransport({
     roomId,
     client: transportMatrixClient,
-    msgTimeout: 18000
+    msgTimeout: 1800,
+    approvedDeviceList: [nodeDeviceId]
   });
-  // Verify devices
-  serverMatrixClient.setGlobalBlacklistUnverifiedDevices(true);
-  transportMatrixClient.setGlobalBlacklistUnverifiedDevices(true);
   // Setup server to respond to verify request from phone
   const serverVerifyPromise = new Promise((res, rej) => {
     serverMatrixClient.on("Room.timeline", async e => {
