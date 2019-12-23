@@ -163,3 +163,4 @@ test("Should be able to route an e2e message from client transport to lsning bri
         }
     });
 }); });
+test.todo("A non verified device will result in a command being ignored or rejected");

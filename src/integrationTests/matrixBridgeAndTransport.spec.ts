@@ -107,3 +107,6 @@ test("Should be able to route an e2e message from client transport to lsning bri
   const balance = await btcClient.getBalance();
   t.true(!isNaN(balance));
 });
+test.todo(
+  "A non verified device will result in a command being ignored or rejected"
+);
