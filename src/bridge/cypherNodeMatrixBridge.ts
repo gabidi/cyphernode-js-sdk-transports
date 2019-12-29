@@ -19,7 +19,7 @@ const cypherNodeMatrixBridge = ({
   startBridge: Function;
   inviteUserToNewRoom: Function;
 } => {
-  const inviteUserToNewRoom = async user => {
+  const inviteUserToNewRoom = async (user, device) => {
     if (!user) throw "Cannot start room bridge without user to invite";
     const _client = client.then ? await client : client;
     const _room = await _client.createRoom({
@@ -32,6 +32,7 @@ const cypherNodeMatrixBridge = ({
     log("bridge created and joined new room", serverRoom.roomId);
     approvedRoomList.push(_room.room_id);
     approvedUserList.push(user);
+    approvedDeviceList.push(device);
     return serverRoom;
   };
   /**

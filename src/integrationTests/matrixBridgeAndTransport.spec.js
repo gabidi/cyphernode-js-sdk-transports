@@ -68,8 +68,8 @@ test("Should be able to route an e2e message from client transport to lsning bri
         switch (_c.label) {
             case 0:
                 _a = t.context, baseUrl = _a.baseUrl, getSyncMatrixClient = _a.getSyncMatrixClient, apiKey = _a.apiKey, user = _a.user, password = _a.password, phoneUser = _a.phoneUser, phoneUserPassword = _a.phoneUserPassword;
-                nodeDeviceId = "bridge";
-                phoneDeviceId = "client";
+                nodeDeviceId = "bridge2";
+                phoneDeviceId = "client2";
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
                         password: password,
@@ -80,11 +80,9 @@ test("Should be able to route an e2e message from client transport to lsning bri
                 serverMatrixClient = _c.sent();
                 _b = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge({
                     transport: cyphernode_js_sdk_1.cypherNodeHttpTransport(),
-                    client: serverMatrixClient,
-                    approvedDeviceList: [phoneDeviceId],
-                    approvedUserList: [phoneUser]
+                    client: serverMatrixClient
                 }), startBridge = _b.startBridge, inviteUserToNewRoom = _b.inviteUserToNewRoom;
-                return [4 /*yield*/, inviteUserToNewRoom(phoneUser)];
+                return [4 /*yield*/, inviteUserToNewRoom(phoneUser, phoneDeviceId)];
             case 2:
                 roomId = (_c.sent()).roomId;
                 return [4 /*yield*/, startBridge({})];

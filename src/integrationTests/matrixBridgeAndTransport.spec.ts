@@ -44,11 +44,9 @@ test("Should be able to route an e2e message from client transport to lsning bri
 
   const { startBridge, inviteUserToNewRoom } = cypherNodeMatrixBridge({
     transport: cypherNodeHttpTransport(),
-    client: serverMatrixClient,
-    approvedDeviceList: [phoneDeviceId],
-    approvedUserList: [phoneUser]
+    client: serverMatrixClient
   });
-  const { roomId } = await inviteUserToNewRoom(phoneUser);
+  const { roomId } = await inviteUserToNewRoom(phoneUser, phoneDeviceId);
   await startBridge({});
   // ------------- Setup client (transport)
   const transportMatrixClient = await getSyncMatrixClient({

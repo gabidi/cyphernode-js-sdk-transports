@@ -48,7 +48,7 @@ var constants_1 = require("../constants");
 var verifyEvents_1 = require("../lib/helper/verifyEvents");
 var cypherNodeMatrixBridge = function (_a) {
     var _b = _a === void 0 ? {} : _a, _c = _b.client, client = _c === void 0 ? matrixUtil_1.getSyncMatrixClient() : _c, _d = _b.transport, transport = _d === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _d, _e = _b.log, log = _e === void 0 ? debug_1.default("sifir:bridge") : _e, _f = _b.approvedRoomList, approvedRoomList = _f === void 0 ? [] : _f, _g = _b.approvedUserList, approvedUserList = _g === void 0 ? [] : _g, _h = _b.approvedDeviceList, approvedDeviceList = _h === void 0 ? [] : _h;
-    var inviteUserToNewRoom = function (user) { return __awaiter(_this, void 0, void 0, function () {
+    var inviteUserToNewRoom = function (user, device) { return __awaiter(_this, void 0, void 0, function () {
         var _client, _a, _room, serverRoom;
         return __generator(this, function (_b) {
             switch (_b.label) {
@@ -79,6 +79,7 @@ var cypherNodeMatrixBridge = function (_a) {
                     log("bridge created and joined new room", serverRoom.roomId);
                     approvedRoomList.push(_room.room_id);
                     approvedUserList.push(user);
+                    approvedDeviceList.push(device);
                     return [2 /*return*/, serverRoom];
             }
         });
