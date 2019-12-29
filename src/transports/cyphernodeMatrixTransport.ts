@@ -12,6 +12,7 @@ const cypherNodeMatrixTransport = async ({
   msgTimeout = 30000,
   maxCmdConcurrency = 2,
   approvedDeviceList = [],
+  approvedUserList = [],
   log = _debug("sifir:transport")
 } = {}): Promise<{ get: Function; post: Function }> => {
   const matrixClient = client.then ? await client : client;
@@ -23,6 +24,7 @@ const cypherNodeMatrixTransport = async ({
   matrixClient.on("Event.decrypted", async event => {
     // we are only intested in messages for our room
     if (event.getRoomId() !== transportRoom.roomId) return;
+    if (!approvedUserList.includes(event.getSender())) return;
     if (event.getSender() === matrixClient.getUserId()) return;
     // Check is ecnrypted
     if (!event.isEncrypted()) {

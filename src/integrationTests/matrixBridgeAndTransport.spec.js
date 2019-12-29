@@ -62,10 +62,10 @@ test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
     });
 }); });
 test("Should be able to route an e2e message from client transport to lsning bridge", function (t) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, phoneUser, phoneUserPassword, nodeDeviceId, phoneDeviceId, serverMatrixClient, startBridge, roomId, transportMatrixClient, transport, serverVerifyPromise, phoneVerifier, btcClient, hash, balance;
+    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, phoneUser, phoneUserPassword, nodeDeviceId, phoneDeviceId, serverMatrixClient, _b, startBridge, inviteUserToNewRoom, roomId, transportMatrixClient, transport, serverVerifyPromise, phoneVerifier, btcClient, hash, balance;
     var _this = this;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
                 _a = t.context, baseUrl = _a.baseUrl, getSyncMatrixClient = _a.getSyncMatrixClient, apiKey = _a.apiKey, user = _a.user, password = _a.password, phoneUser = _a.phoneUser, phoneUserPassword = _a.phoneUserPassword;
                 nodeDeviceId = "bridge";
@@ -77,33 +77,36 @@ test("Should be able to route an e2e message from client transport to lsning bri
                         deviceId: nodeDeviceId
                     })];
             case 1:
-                serverMatrixClient = _b.sent();
-                startBridge = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge({
+                serverMatrixClient = _c.sent();
+                _b = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge({
                     transport: cyphernode_js_sdk_1.cypherNodeHttpTransport(),
                     client: serverMatrixClient,
-                    approvedDeviceList: [phoneDeviceId]
-                }).startBridge;
-                return [4 /*yield*/, startBridge({
-                        inviteUser: phoneUser
-                    })];
+                    approvedDeviceList: [phoneDeviceId],
+                    approvedUserList: [phoneUser]
+                }), startBridge = _b.startBridge, inviteUserToNewRoom = _b.inviteUserToNewRoom;
+                return [4 /*yield*/, inviteUserToNewRoom(phoneUser)];
             case 2:
-                roomId = _b.sent();
+                roomId = (_c.sent()).roomId;
+                return [4 /*yield*/, startBridge({})];
+            case 3:
+                _c.sent();
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
                         password: phoneUserPassword,
                         user: phoneUser,
                         deviceId: phoneDeviceId
                     })];
-            case 3:
-                transportMatrixClient = _b.sent();
+            case 4:
+                transportMatrixClient = _c.sent();
                 return [4 /*yield*/, cyphernodeMatrixTransport_1.cypherNodeMatrixTransport({
                         roomId: roomId,
                         client: transportMatrixClient,
                         msgTimeout: 1800,
-                        approvedDeviceList: [nodeDeviceId]
+                        approvedDeviceList: [nodeDeviceId],
+                        approvedUserList: [user]
                     })];
-            case 4:
-                transport = _b.sent();
+            case 5:
+                transport = _c.sent();
                 serverVerifyPromise = new Promise(function (res, rej) {
                     serverMatrixClient.on("Room.timeline", function (e) { return __awaiter(_this, void 0, void 0, function () {
                         var content, serverVerifier;
@@ -118,6 +121,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
                                     log("got request", content, content.msgtype);
                                     serverVerifier = serverMatrixClient.acceptVerificationDM(e, matrixUtil_1.verificationMethods.SAS);
                                     serverVerifier.on("show_sas", function (e) {
+                                        debug_1.default("------------------server Sas", e);
                                         e.confirm();
                                     });
                                     return [4 /*yield*/, serverVerifier.verify()];
@@ -130,34 +134,39 @@ test("Should be able to route an e2e message from client transport to lsning bri
                     }); });
                 });
                 return [4 /*yield*/, transportMatrixClient.requestVerificationDM(user, roomId, [matrixUtil_1.verificationMethods.SAS])];
-            case 5:
-                phoneVerifier = _b.sent();
+            case 6:
+                phoneVerifier = _c.sent();
                 phoneVerifier.on("show_sas", function (r) {
+                    debug_1.default("-------------------phone sas", r);
                     r.confirm();
                 });
                 return [4 /*yield*/, Promise.all([phoneVerifier.verify(), serverVerifyPromise])];
-            case 6:
-                _b.sent();
+            case 7:
+                _c.sent();
+                debug_1.default("Verifier done");
+                return [4 /*yield*/, new Promise(function (res, rej) { return setTimeout(res, 10000); })];
+            case 8:
+                _c.sent();
                 // Encrypt room and wait for conifmrionat
                 return [4 /*yield*/, serverMatrixClient.setRoomEncryption(roomId, {
                         algorithm: "m.megolm.v1.aes-sha2"
                     })];
-            case 7:
+            case 9:
                 // Encrypt room and wait for conifmrionat
-                _b.sent();
+                _c.sent();
                 return [4 /*yield*/, transportMatrixClient.setRoomEncryption(roomId, {
                         algorithm: "m.megolm.v1.aes-sha2"
                     })];
-            case 8:
-                _b.sent();
+            case 10:
+                _c.sent();
                 btcClient = cyphernode_js_sdk_1.btcClient({ transport: transport });
                 return [4 /*yield*/, btcClient.getBestBlockHash()];
-            case 9:
-                hash = _b.sent();
+            case 11:
+                hash = _c.sent();
                 t.true(!!hash.length);
                 return [4 /*yield*/, btcClient.getBalance()];
-            case 10:
-                balance = _b.sent();
+            case 12:
+                balance = _c.sent();
                 t.true(!isNaN(balance));
                 return [2 /*return*/];
         }

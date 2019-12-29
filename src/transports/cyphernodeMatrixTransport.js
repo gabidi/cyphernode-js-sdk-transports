@@ -69,30 +69,30 @@ var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
 var verifyEvents_1 = require("../lib/helper/verifyEvents");
 var cypherNodeMatrixTransport = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.roomId, roomId = _c === void 0 ? null : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _b.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _b.maxCmdConcurrency, maxCmdConcurrency = _g === void 0 ? 2 : _g, _h = _b.approvedDeviceList, approvedDeviceList = _h === void 0 ? [] : _h, _j = _b.log, log = _j === void 0 ? debug_1.default("sifir:transport") : _j;
+    var _b = _a === void 0 ? {} : _a, _c = _b.roomId, roomId = _c === void 0 ? null : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _b.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _b.maxCmdConcurrency, maxCmdConcurrency = _g === void 0 ? 2 : _g, _h = _b.approvedDeviceList, approvedDeviceList = _h === void 0 ? [] : _h, _j = _b.approvedUserList, approvedUserList = _j === void 0 ? [] : _j, _k = _b.log, log = _k === void 0 ? debug_1.default("sifir:transport") : _k;
     return __awaiter(_this, void 0, void 0, function () {
-        var matrixClient, _k, transportRoom, _commandQueue, _sendCommand, get, post;
+        var matrixClient, _l, transportRoom, _commandQueue, _sendCommand, get, post;
         var _this = this;
-        return __generator(this, function (_l) {
-            switch (_l.label) {
+        return __generator(this, function (_m) {
+            switch (_m.label) {
                 case 0:
                     if (!client.then) return [3 /*break*/, 2];
                     return [4 /*yield*/, client];
                 case 1:
-                    _k = _l.sent();
+                    _l = _m.sent();
                     return [3 /*break*/, 3];
                 case 2:
-                    _k = client;
-                    _l.label = 3;
+                    _l = client;
+                    _m.label = 3;
                 case 3:
-                    matrixClient = _k;
+                    matrixClient = _l;
                     if (!roomId)
                         throw "Must provide a room for the transport";
                     if (!matrixClient.isCryptoEnabled())
                         throw "Crypto not enabled on client with required encryption flag set";
                     return [4 /*yield*/, matrixClient.joinRoom(roomId)];
                 case 4:
-                    transportRoom = _l.sent();
+                    transportRoom = _m.sent();
                     log("transport joined room", transportRoom.roomId);
                     matrixClient.on("Event.decrypted", function (event) { return __awaiter(_this, void 0, void 0, function () {
                         var err_1, _a, body, msgtype, _b, nonce, reply;
@@ -101,6 +101,8 @@ var cypherNodeMatrixTransport = function (_a) {
                                 case 0:
                                     // we are only intested in messages for our room
                                     if (event.getRoomId() !== transportRoom.roomId)
+                                        return [2 /*return*/];
+                                    if (!approvedUserList.includes(event.getSender()))
                                         return [2 /*return*/];
                                     if (event.getSender() === matrixClient.getUserId())
                                         return [2 /*return*/];

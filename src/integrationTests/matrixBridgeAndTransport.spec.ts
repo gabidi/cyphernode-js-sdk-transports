@@ -32,9 +32,9 @@ test("Should be able to route an e2e message from client transport to lsning bri
     phoneUser,
     phoneUserPassword
   } = t.context;
-  // Setup server
-  const nodeDeviceId = `bridge`;
-  const phoneDeviceId = `client`;
+  // ---- Setup server (bridge)
+  const nodeDeviceId = `bridge2`;
+  const phoneDeviceId = `client2`;
   const serverMatrixClient = await getSyncMatrixClient({
     baseUrl,
     password,
@@ -42,16 +42,15 @@ test("Should be able to route an e2e message from client transport to lsning bri
     deviceId: nodeDeviceId
   });
 
-  const { startBridge } = cypherNodeMatrixBridge({
+  const { startBridge, inviteUserToNewRoom } = cypherNodeMatrixBridge({
     transport: cypherNodeHttpTransport(),
     client: serverMatrixClient,
-    approvedDeviceList: [phoneDeviceId]
+    approvedDeviceList: [phoneDeviceId],
+    approvedUserList: [phoneUser]
   });
-
-  const roomId = await startBridge({
-    inviteUser: phoneUser
-  });
-  // Setup client (frontside)
+  const { roomId } = await inviteUserToNewRoom(phoneUser);
+  await startBridge({});
+  // ------------- Setup client (transport)
   const transportMatrixClient = await getSyncMatrixClient({
     baseUrl,
     password: phoneUserPassword,
@@ -62,7 +61,8 @@ test("Should be able to route an e2e message from client transport to lsning bri
     roomId,
     client: transportMatrixClient,
     msgTimeout: 1800,
-    approvedDeviceList: [nodeDeviceId]
+    approvedDeviceList: [nodeDeviceId],
+    approvedUserList: [user]
   });
   // Setup server to respond to verify request from phone
   const serverVerifyPromise = new Promise((res, rej) => {
@@ -77,6 +77,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
         verificationMethods.SAS
       );
       serverVerifier.on("show_sas", e => {
+        debug("------------------server Sas", e);
         e.confirm();
       });
       await serverVerifier.verify();
@@ -90,9 +91,12 @@ test("Should be able to route an e2e message from client transport to lsning bri
     [verificationMethods.SAS]
   );
   phoneVerifier.on("show_sas", r => {
+    debug("-------------------phone sas", r);
     r.confirm();
   });
   await Promise.all([phoneVerifier.verify(), serverVerifyPromise]);
+  debug("Verifier done");
+  await new Promise((res, rej) => setTimeout(res, 10000));
   // Encrypt room and wait for conifmrionat
   await serverMatrixClient.setRoomEncryption(roomId, {
     algorithm: "m.megolm.v1.aes-sha2"

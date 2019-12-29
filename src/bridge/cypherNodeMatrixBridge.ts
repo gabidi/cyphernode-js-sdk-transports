@@ -12,37 +12,46 @@ const cypherNodeMatrixBridge = ({
   client = getSyncMatrixClient(),
   transport = cypherNodeHttpTransport(),
   log = _debug("sifir:bridge"),
+  approvedRoomList = [],
+  approvedUserList = [],
   approvedDeviceList = []
 } = {}): {
   startBridge: Function;
-  addApprovedDevice: Function;
+  inviteUserToNewRoom: Function;
 } => {
-  const addApprovedDevice = (device: string) => approvedDeviceList.push(device);
+  const inviteUserToNewRoom = async user => {
+    if (!user) throw "Cannot start room bridge without user to invite";
+    const _client = client.then ? await client : client;
+    const _room = await _client.createRoom({
+      invite: [user],
+      visibility: "private",
+      name: `cyphernode-${uuid()}`,
+      room_alias_name: `cyphernode-${uuid()}`
+    });
+    const serverRoom = await _client.joinRoom(_room.room_id);
+    log("bridge created and joined new room", serverRoom.roomId);
+    approvedRoomList.push(_room.room_id);
+    approvedUserList.push(user);
+    return serverRoom;
+  };
   /**
    * Starts the bridge and returns the private roomId the user needs to join
    */
-  const startBridge = async ({ inviteUser } = {}): Promise<string> => {
-    if (!inviteUser) throw "Cannot start room bridge without user to invite";
-    log("starting bridge for user", inviteUser);
+  const startBridge = async (): Promise<void> => {
     const { get, post } = transport;
     const _client = client.then ? await client : client;
 
     if (!_client.isCryptoEnabled())
       throw "Crypto not enabled on client with required encryption flag set";
 
-    const _room = await client.createRoom({
-      invite: [inviteUser],
-      visibility: "private",
-      name: `cyphernode-${uuid()}`,
-      room_alias_name: `cyphernode-${uuid()}`
-    });
-    const serverRoom = await client.joinRoom(_room.room_id);
-
-    log("bridge created and joined new room", serverRoom.roomId);
     _client.on("Event.decrypted", async event => {
       // _client.on("Room.timeline", async function(event, room, toStartOfTimeline) {
-      // we know we only want to respond to command
-      if (event.getRoomId() !== _room.room_id) return;
+      // make sure room is in list of approved rooms
+      if (!approvedRoomList.includes(event.getRoomId())) return;
+      // make sure user sending message is in approved
+      // We check autneticitiy of user in abit
+      if (!approvedUserList.includes(event.getSender())) return;
+      // make sure it's not an echo of our own message
       if (event.getSender() === _client.getUserId()) return;
       // Check encryption
       if (!event.isEncrypted()) {
@@ -87,18 +96,17 @@ const cypherNodeMatrixBridge = ({
         reply = { error };
       }
       log("send Event", nonce, reply);
-      await _client.sendEvent(serverRoom.roomId, events.COMMAND_REPLY, {
+      await _client.sendEvent(event.getRoomId(), events.COMMAND_REPLY, {
         body: JSON.stringify({ nonce, reply }),
         msgtype: events.COMMAND_REPLY
       });
       // });
     });
     log("finish starting bridge");
-    return serverRoom.roomId;
   };
   return {
     startBridge,
-    addApprovedDevice
+    inviteUserToNewRoom
   };
 };
 export { cypherNodeMatrixBridge };
