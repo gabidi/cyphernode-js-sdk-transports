@@ -25,8 +25,8 @@ const cypherNodeMatrixBridge = ({
     const _room = await _client.createRoom({
       invite: [user],
       visibility: "private",
-      name: `cyphernode-${uuid()}`,
-      room_alias_name: `cyphernode-${uuid()}`
+      name: `s-br-${uuid()}`,
+      room_alias_name: `s-br-${uuid()}`
     });
     const serverRoom = await _client.joinRoom(_room.room_id);
     log("bridge created and joined new room", serverRoom.roomId);

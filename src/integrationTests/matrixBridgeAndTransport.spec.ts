@@ -47,7 +47,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
     client: serverMatrixClient
   });
   const { roomId } = await inviteUserToNewRoom(phoneUser, phoneDeviceId);
-  await startBridge({});
+  await startBridge();
   // ------------- Setup client (transport)
   const transportMatrixClient = await getSyncMatrixClient({
     baseUrl,

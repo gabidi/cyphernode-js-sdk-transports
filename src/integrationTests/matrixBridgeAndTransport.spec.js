@@ -85,7 +85,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
                 return [4 /*yield*/, inviteUserToNewRoom(phoneUser, phoneDeviceId)];
             case 2:
                 roomId = (_c.sent()).roomId;
-                return [4 /*yield*/, startBridge({})];
+                return [4 /*yield*/, startBridge()];
             case 3:
                 _c.sent();
                 return [4 /*yield*/, getSyncMatrixClient({

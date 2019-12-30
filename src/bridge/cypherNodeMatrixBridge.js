@@ -68,8 +68,8 @@ var cypherNodeMatrixBridge = function (_a) {
                     return [4 /*yield*/, _client.createRoom({
                             invite: [user],
                             visibility: "private",
-                            name: "cyphernode-" + v4_1.default(),
-                            room_alias_name: "cyphernode-" + v4_1.default()
+                            name: "s-br-" + v4_1.default(),
+                            room_alias_name: "s-br-" + v4_1.default()
                         })];
                 case 4:
                     _room = _b.sent();
