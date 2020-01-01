@@ -44,6 +44,7 @@ var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var cypherNodeMatrixBridge_1 = require("../bridge/cypherNodeMatrixBridge");
 var cyphernodeMatrixTransport_1 = require("../transports/cyphernodeMatrixTransport");
 var matrixUtil_1 = require("../lib/matrixUtil");
+var v4_1 = __importDefault(require("uuid/v4"));
 var debug_1 = __importDefault(require("debug"));
 var log = debug_1.default("sifir:test");
 var test = ava_1.serial; //FIXME this bullshit, interface for Matrix
@@ -68,8 +69,8 @@ test("Should be able to route an e2e message from client transport to lsning bri
         switch (_c.label) {
             case 0:
                 _a = t.context, baseUrl = _a.baseUrl, getSyncMatrixClient = _a.getSyncMatrixClient, apiKey = _a.apiKey, user = _a.user, password = _a.password, phoneUser = _a.phoneUser, phoneUserPassword = _a.phoneUserPassword;
-                nodeDeviceId = "bridge2";
-                phoneDeviceId = "client2";
+                nodeDeviceId = v4_1.default();
+                phoneDeviceId = v4_1.default();
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
                         password: password,

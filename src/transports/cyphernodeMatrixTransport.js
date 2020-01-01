@@ -90,10 +90,17 @@ var cypherNodeMatrixTransport = function (_a) {
                         throw "Must provide a room for the transport";
                     if (!matrixClient.isCryptoEnabled())
                         throw "Crypto not enabled on client with required encryption flag set";
+                    transportRoom = matrixClient.getRoom(roomId);
+                    if (!transportRoom.roomId)
+                        throw "Invalid room passed or cannot find room";
+                    log(transportRoom, transportRoom.getMyMembership());
+                    if (!(transportRoom.getMyMembership() === "invite")) return [3 /*break*/, 5];
                     return [4 /*yield*/, matrixClient.joinRoom(roomId)];
                 case 4:
-                    transportRoom = _m.sent();
+                    _m.sent();
                     log("transport joined room", transportRoom.roomId);
+                    _m.label = 5;
+                case 5:
                     matrixClient.on("Event.decrypted", function (event) { return __awaiter(_this, void 0, void 0, function () {
                         var err_1, _a, body, msgtype, _b, nonce, reply;
                         return __generator(this, function (_c) {

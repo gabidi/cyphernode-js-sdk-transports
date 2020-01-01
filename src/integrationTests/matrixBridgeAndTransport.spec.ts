@@ -33,8 +33,8 @@ test("Should be able to route an e2e message from client transport to lsning bri
     phoneUserPassword
   } = t.context;
   // ---- Setup server (bridge)
-  const nodeDeviceId = `bridge2`;
-  const phoneDeviceId = `client2`;
+  const nodeDeviceId = uuid();
+  const phoneDeviceId = uuid();
   const serverMatrixClient = await getSyncMatrixClient({
     baseUrl,
     password,

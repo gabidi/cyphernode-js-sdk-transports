@@ -19,8 +19,14 @@ const cypherNodeMatrixTransport = async ({
   if (!roomId) throw "Must provide a room for the transport";
   if (!matrixClient.isCryptoEnabled())
     throw "Crypto not enabled on client with required encryption flag set";
-  const transportRoom = await matrixClient.joinRoom(roomId);
-  log("transport joined room", transportRoom.roomId);
+  const transportRoom = matrixClient.getRoom(roomId);
+  if (!transportRoom.roomId) throw "Invalid room passed or cannot find room";
+  log(transportRoom, transportRoom.getMyMembership());
+  // Check if we're note members yet of this room and join
+  if (transportRoom.getMyMembership() === "invite") {
+    await matrixClient.joinRoom(roomId);
+    log("transport joined room", transportRoom.roomId);
+  }
   matrixClient.on("Event.decrypted", async event => {
     // we are only intested in messages for our room
     if (event.getRoomId() !== transportRoom.roomId) return;
