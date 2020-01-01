@@ -93,7 +93,6 @@ var cypherNodeMatrixTransport = function (_a) {
                     transportRoom = matrixClient.getRoom(roomId);
                     if (!transportRoom.roomId)
                         throw "Invalid room passed or cannot find room";
-                    log(transportRoom, transportRoom.getMyMembership());
                     if (!(transportRoom.getMyMembership() === "invite")) return [3 /*break*/, 5];
                     return [4 /*yield*/, matrixClient.joinRoom(roomId)];
                 case 4:
