@@ -46,6 +46,7 @@ const cypherNodeMatrixBridge = ({
       throw "Crypto not enabled on client with required encryption flag set";
 
     _client.on("Event.decrypted", async event => {
+      log("decrypted event", event.getSender(), event.getContent());
       // _client.on("Room.timeline", async function(event, room, toStartOfTimeline) {
       // make sure room is in list of approved rooms
       if (!approvedRoomList.includes(event.getRoomId())) return;
@@ -63,8 +64,6 @@ const cypherNodeMatrixBridge = ({
         );
         return;
       }
-      // event.once("Event.decrypted", async () => {
-      log("decrypted event", event.getSender(), event.getContent());
       // we are only intested in cyphernode.commnads for our room
       if (event.getContent().msgtype !== events.COMMAND_REQUEST) return;
       try {

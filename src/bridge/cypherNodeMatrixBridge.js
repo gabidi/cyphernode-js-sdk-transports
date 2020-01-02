@@ -111,6 +111,7 @@ var cypherNodeMatrixBridge = function (_a) {
                         return __generator(this, function (_d) {
                             switch (_d.label) {
                                 case 0:
+                                    log("decrypted event", event.getSender(), event.getContent());
                                     // _client.on("Room.timeline", async function(event, room, toStartOfTimeline) {
                                     // make sure room is in list of approved rooms
                                     if (!approvedRoomList.includes(event.getRoomId()))
@@ -127,8 +128,6 @@ var cypherNodeMatrixBridge = function (_a) {
                                         log("[ERROR] Recieved unencrypted commmand reply with encryptedOnly flag on!", event.getType(), event.getContent());
                                         return [2 /*return*/];
                                     }
-                                    // event.once("Event.decrypted", async () => {
-                                    log("decrypted event", event.getSender(), event.getContent());
                                     // we are only intested in cyphernode.commnads for our room
                                     if (event.getContent().msgtype !== constants_1.events.COMMAND_REQUEST)
                                         return [2 /*return*/];
