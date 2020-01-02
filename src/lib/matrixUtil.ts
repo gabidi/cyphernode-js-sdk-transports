@@ -5,8 +5,11 @@ import matrix, { MatrixClient, MatrixEvent } from "matrix-js-sdk";
 import { verificationMethods } from "matrix-js-sdk/lib/crypto";
 import _debug from "debug";
 // FIXME not sure if we should default this or force to provide a storage...
-let localStorage = localStorage || global.localStorage;
-if (typeof localStorage === "undefined" || localStorage === null) {
+if (
+  (!window || !window.localStorage) &&
+  !global.localStorage &&
+  (typeof localStorage === "undefined" || localStorage === null)
+) {
   const { LocalStorage } = require("node-localstorage");
   localStorage = new LocalStorage("./localstorage");
 }
@@ -17,11 +20,12 @@ const getSyncMatrixClient = async ({
   password = process.env.SIFIR_MATRIX_PASS,
   baseUrl = process.env.SIFIR_MATRIX_SERVER,
   deviceId = undefined,
-  sessionStore = new matrix.WebStorageSessionStore(localStorage),
+  storage = undefined,
   acceptVerifiedDevicesOnly = true,
   ...opts
 } = {}): Promise<MatrixClient> => {
   debug("Conneting to", baseUrl, user);
+  const sessionStore = new matrix.WebStorageSessionStore(storage);
   const matrixClient = await matrix.createClient({
     baseUrl,
     initialSyncLimit: 100,

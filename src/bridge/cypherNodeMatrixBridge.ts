@@ -1,6 +1,5 @@
 // FIXME update this on next cyphernode sdk release
 import { cypherNodeHttpTransport } from "cyphernode-js-sdk";
-import matrix from "matrix-js-sdk";
 import { queue } from "async";
 import uuid from "uuid/v4";
 import { EventEmitter } from "events";
