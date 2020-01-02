@@ -94,7 +94,6 @@ test("Should be able to route an e2e message from client transport to lsning bri
   });
   await Promise.all([phoneVerifier.verify(), serverVerifyPromise]);
   debug("Verifier done");
-  await new Promise((res, rej) => setTimeout(res, 10000));
   // Encrypt room and wait for conifmrionat
   await serverMatrixClient.setRoomEncryption(roomId, {
     algorithm: "m.megolm.v1.aes-sha2"

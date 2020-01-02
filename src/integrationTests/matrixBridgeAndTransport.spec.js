@@ -143,28 +143,25 @@ test("Should be able to route an e2e message from client transport to lsning bri
             case 7:
                 _c.sent();
                 debug_1.default("Verifier done");
-                return [4 /*yield*/, new Promise(function (res, rej) { return setTimeout(res, 10000); })];
-            case 8:
-                _c.sent();
                 // Encrypt room and wait for conifmrionat
                 return [4 /*yield*/, serverMatrixClient.setRoomEncryption(roomId, {
                         algorithm: "m.megolm.v1.aes-sha2"
                     })];
-            case 9:
+            case 8:
                 // Encrypt room and wait for conifmrionat
                 _c.sent();
                 return [4 /*yield*/, transportMatrixClient.setRoomEncryption(roomId, {
                         algorithm: "m.megolm.v1.aes-sha2"
                     })];
-            case 10:
+            case 9:
                 _c.sent();
                 btcClient = cyphernode_js_sdk_1.btcClient({ transport: transport });
                 return [4 /*yield*/, btcClient.getBestBlockHash()];
-            case 11:
+            case 10:
                 hash = _c.sent();
                 t.true(!!hash.length);
                 return [4 /*yield*/, btcClient.getBalance()];
-            case 12:
+            case 11:
                 balance = _c.sent();
                 t.true(!isNaN(balance));
                 return [2 /*return*/];
