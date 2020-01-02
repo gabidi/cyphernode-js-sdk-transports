@@ -78,9 +78,10 @@ var crypto_1 = require("matrix-js-sdk/lib/crypto");
 exports.verificationMethods = crypto_1.verificationMethods;
 var debug_1 = __importDefault(require("debug"));
 // FIXME not sure if we should default this or force to provide a storage...
+var localStorage = localStorage || global.localStorage;
 if (typeof localStorage === "undefined" || localStorage === null) {
     var LocalStorage = require("node-localstorage").LocalStorage;
-    var localStorage = new LocalStorage("./localstorage");
+    localStorage = new LocalStorage("./localstorage");
 }
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {

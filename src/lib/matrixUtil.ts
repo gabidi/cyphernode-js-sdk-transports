@@ -5,9 +5,10 @@ import matrix, { MatrixClient, MatrixEvent } from "matrix-js-sdk";
 import { verificationMethods } from "matrix-js-sdk/lib/crypto";
 import _debug from "debug";
 // FIXME not sure if we should default this or force to provide a storage...
+let localStorage = localStorage || global.localStorage;
 if (typeof localStorage === "undefined" || localStorage === null) {
   const { LocalStorage } = require("node-localstorage");
-  var localStorage = new LocalStorage("./localstorage");
+  localStorage = new LocalStorage("./localstorage");
 }
 
 const debug = _debug("matrixutil:");
