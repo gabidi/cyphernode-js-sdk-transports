@@ -34,25 +34,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var ava_1 = require("ava");
 var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var cyphernodeTorBridge_1 = require("../bridge/cyphernodeTorBridge");
-var debug_1 = __importDefault(require("debug"));
 var sinon_1 = require("sinon");
-var log = debug_1.default("sifir:test");
-var test = ava_1.serial; //FIXME this bullshit, interface for Matrix
+var log = debug("sifir:test");
+var test = ava_1.serial;
 test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         t.context = {};
         return [2 /*return*/];
     });
 }); });
-test("Should be able to route an e2e message from client transport to lsning bridge", function (t) { return __awaiter(_this, void 0, void 0, function () {
+// This test needs a bit of scafolding, to create a docker container, label it to get traefik traffic the run it
+// Will get to it eventually
+test.skip("Shoud be able to route a message to TORs brdige though TOR networks", function (t) { return __awaiter(_this, void 0, void 0, function () {
     var transport, startBridge, api;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -63,6 +61,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
                 return [4 /*yield*/, new Promise(function (res, rej) { return setTimeout(res, 15000); })];
             case 1:
                 _a.sent();
+                // TODO add caller here after we finish docker file for cn
                 t.true(transport.get.calledOnce);
                 t.pass();
                 return [2 /*return*/];

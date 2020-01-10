@@ -52,9 +52,12 @@ var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var express_1 = __importDefault(require("express"));
+var events_1 = require("events");
 var debug_1 = __importDefault(require("debug"));
+var body_parser_1 = __importDefault(require("body-parser"));
+var cors_1 = __importDefault(require("cors"));
 var cyphernodeTorBridge = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, _d = _b.log, log = _d === void 0 ? debug_1.default("sifir:bridge") : _d;
+    var _b = _a === void 0 ? {} : _a, _c = _b.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, _d = _b.log, log = _d === void 0 ? debug_1.default("sifir:bridge") : _d, _e = _b.bridge, bridge = _e === void 0 ? new events_1.EventEmitter() : _e;
     /**
      * Starts the bridge and returns the private roomId the user needs to join
      */
@@ -63,6 +66,13 @@ var cyphernodeTorBridge = function (_a) {
         var _this = this;
         return __generator(this, function (_a) {
             api = express_1.default();
+            api.use(body_parser_1.default.json());
+            api.use(cors_1.default({
+                methods: ["GET", "POST", "OPTIONS"],
+                origin: true,
+                allowedHeaders: ["Content-Type", "Authorization", "token"],
+                credentials: true
+            }));
             get = transport.get, post = transport.post;
             api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
                 var reply, method, command, param, _a, error_1;
