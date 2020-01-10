@@ -100,7 +100,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
                 return [4 /*yield*/, cyphernodeMatrixTransport_1.cypherNodeMatrixTransport({
                         roomId: roomId,
                         client: transportMatrixClient,
-                        msgTimeout: 1800,
+                        msgTimeout: 2800,
                         approvedDeviceList: [nodeDeviceId],
                         approvedUserList: [user]
                     })];

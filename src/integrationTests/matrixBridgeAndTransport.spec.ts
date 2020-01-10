@@ -58,7 +58,7 @@ test("Should be able to route an e2e message from client transport to lsning bri
   const transport = await cypherNodeMatrixTransport({
     roomId,
     client: transportMatrixClient,
-    msgTimeout: 1800,
+    msgTimeout: 2800,
     approvedDeviceList: [nodeDeviceId],
     approvedUserList: [user]
   });
