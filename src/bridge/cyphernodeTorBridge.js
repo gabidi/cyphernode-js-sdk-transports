@@ -57,73 +57,76 @@ var debug_1 = __importDefault(require("debug"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var cors_1 = __importDefault(require("cors"));
 var cyphernodeTorBridge = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, _d = _b.log, log = _d === void 0 ? debug_1.default("sifir:bridge") : _d, _e = _b.bridge, bridge = _e === void 0 ? new events_1.EventEmitter() : _e;
+    var _b = _a === void 0 ? {} : _a, _c = _b.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, _d = _b.log, log = _d === void 0 ? debug_1.default("sifir:tor-bridge") : _d, _e = _b.bridge, bridge = _e === void 0 ? new events_1.EventEmitter() : _e;
     /**
      * Starts the bridge and returns the private roomId the user needs to join
      */
-    var startBridge = function () { return __awaiter(_this, void 0, void 0, function () {
-        var api, get, post;
-        var _this = this;
-        return __generator(this, function (_a) {
-            api = express_1.default();
-            api.use(body_parser_1.default.json());
-            api.use(cors_1.default({
-                methods: ["GET", "POST", "OPTIONS"],
-                origin: true,
-                allowedHeaders: ["Content-Type", "Authorization", "token"],
-                credentials: true
-            }));
-            get = transport.get, post = transport.post;
-            api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-                var reply, method, command, param, _a, error_1;
-                return __generator(this, function (_b) {
-                    switch (_b.label) {
-                        case 0:
-                            method = req.method;
-                            command = req.params.command;
-                            param = method === "POST" ? req.body : req.params["0"];
-                            log("got request", method, command, param);
-                            _b.label = 1;
-                        case 1:
-                            _b.trys.push([1, 8, , 9]);
-                            _a = method;
-                            switch (_a) {
-                                case "GET": return [3 /*break*/, 2];
-                                case "POST": return [3 /*break*/, 4];
-                            }
-                            return [3 /*break*/, 6];
-                        case 2:
-                            log("processing get", command);
-                            return [4 /*yield*/, get(command, param)];
-                        case 3:
-                            reply = _b.sent();
-                            return [3 /*break*/, 7];
-                        case 4:
-                            log("processing post", command);
-                            return [4 /*yield*/, post(command, param)];
-                        case 5:
-                            reply = _b.sent();
-                            return [3 /*break*/, 7];
-                        case 6:
-                            console.error("Unknown command method", method);
-                            return [2 /*return*/];
-                        case 7:
-                            res.status(200).json(__assign({}, reply));
-                            return [3 /*break*/, 9];
-                        case 8:
-                            error_1 = _b.sent();
-                            log("Error sending command to transport", error_1);
-                            res.status(404).json({ error: error_1 });
-                            return [3 /*break*/, 9];
-                        case 9: return [2 /*return*/];
-                    }
-                });
-            }); });
-            api.listen(3010);
-            log("finish starting bridge");
-            return [2 /*return*/, api];
+    var startBridge = function (_a) {
+        var _b = (_a === void 0 ? {} : _a).bridgeApiPort, bridgeApiPort = _b === void 0 ? 3010 : _b;
+        return __awaiter(_this, void 0, void 0, function () {
+            var api, get, post;
+            var _this = this;
+            return __generator(this, function (_c) {
+                api = express_1.default();
+                api.use(body_parser_1.default.json());
+                api.use(cors_1.default({
+                    methods: ["GET", "POST", "OPTIONS"],
+                    origin: true,
+                    allowedHeaders: ["Content-Type", "Authorization", "token"],
+                    credentials: true
+                }));
+                get = transport.get, post = transport.post;
+                api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
+                    var reply, method, command, param, _a, error_1;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
+                            case 0:
+                                method = req.method;
+                                command = req.params.command;
+                                param = method === "POST" ? req.body : req.params["0"];
+                                log("got request", method, command, param);
+                                _b.label = 1;
+                            case 1:
+                                _b.trys.push([1, 8, , 9]);
+                                _a = method;
+                                switch (_a) {
+                                    case "GET": return [3 /*break*/, 2];
+                                    case "POST": return [3 /*break*/, 4];
+                                }
+                                return [3 /*break*/, 6];
+                            case 2:
+                                log("processing get", command);
+                                return [4 /*yield*/, get(command, param)];
+                            case 3:
+                                reply = _b.sent();
+                                return [3 /*break*/, 7];
+                            case 4:
+                                log("processing post", command);
+                                return [4 /*yield*/, post(command, param)];
+                            case 5:
+                                reply = _b.sent();
+                                return [3 /*break*/, 7];
+                            case 6:
+                                console.error("Unknown command method", method);
+                                return [2 /*return*/];
+                            case 7:
+                                res.status(200).json(__assign({}, reply));
+                                return [3 /*break*/, 9];
+                            case 8:
+                                error_1 = _b.sent();
+                                log("Error sending command to transport", error_1);
+                                res.status(404).json({ error: error_1 });
+                                return [3 /*break*/, 9];
+                            case 9: return [2 /*return*/];
+                        }
+                    });
+                }); });
+                api.listen(bridgeApiPort);
+                log("finish starting bridge");
+                return [2 /*return*/, api];
+            });
         });
-    }); };
+    };
     // });
     return {
         startBridge: startBridge

@@ -8,13 +8,13 @@ import bodyParser from "body-parser";
 import cors from "cors";
 const cyphernodeTorBridge = ({
   transport = cypherNodeHttpTransport(),
-  log = _debug("sifir:bridge"),
+  log = _debug("sifir:tor-bridge"),
   bridge = new EventEmitter()
 } = {}): any => {
   /**
    * Starts the bridge and returns the private roomId the user needs to join
    */
-  const startBridge = async (): Promise<void> => {
+  const startBridge = async ({ bridgeApiPort = 3010 } = {}): Promise<void> => {
     const api = express();
     api.use(bodyParser.json());
     api.use(
@@ -53,7 +53,7 @@ const cyphernodeTorBridge = ({
         res.status(404).json({ error });
       }
     });
-    api.listen(3010);
+    api.listen(bridgeApiPort);
     log("finish starting bridge");
     return api;
   };
