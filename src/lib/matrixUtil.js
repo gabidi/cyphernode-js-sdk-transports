@@ -78,16 +78,22 @@ var crypto_1 = require("matrix-js-sdk/lib/crypto");
 exports.verificationMethods = crypto_1.verificationMethods;
 var debug_1 = __importDefault(require("debug"));
 // FIXME not sure if we should default this or force to provide a storage...
-if (typeof localStorage === "undefined" || localStorage === null) {
+var storage;
+if ((typeof window === "undefined" || !window.localStorage) &&
+    !global.localStorage &&
+    (typeof localStorage === "undefined" || localStorage === null)) {
     var LocalStorage = require("node-localstorage").LocalStorage;
-    var localStorage = new LocalStorage("./localstorage");
+    storage = new LocalStorage("./localstorage");
+}
+else {
+    storage = localStorage || global.localStorage;
 }
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
     if (_a === void 0) { _a = {}; }
     return __awaiter(_this, void 0, void 0, function () {
         var matrixClient, syncFailCount;
-        var _b = _a.user, user = _b === void 0 ? process.env.SIFIR_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.SIFIR_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.SIFIR_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, _f = _a.sessionStore, sessionStore = _f === void 0 ? new matrix_js_sdk_1.default.WebStorageSessionStore(localStorage) : _f, _g = _a.acceptVerifiedDevicesOnly, acceptVerifiedDevicesOnly = _g === void 0 ? true : _g, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId", "sessionStore", "acceptVerifiedDevicesOnly"]);
+        var _b = _a.user, user = _b === void 0 ? process.env.SIFIR_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.SIFIR_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.SIFIR_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, _f = _a.sessionStore, sessionStore = _f === void 0 ? new matrix_js_sdk_1.default.WebStorageSessionStore(storage) : _f, _g = _a.acceptVerifiedDevicesOnly, acceptVerifiedDevicesOnly = _g === void 0 ? true : _g, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId", "sessionStore", "acceptVerifiedDevicesOnly"]);
         return __generator(this, function (_h) {
             switch (_h.label) {
                 case 0:
