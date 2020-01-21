@@ -1,13 +1,13 @@
 {
   "name": "cyphernode-js-sdk-transports",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The purpose of this stack is to enable different means of communication via modular transports. Transports are an abstraction layer that present a unified interface for Cyphernode's JS sdk to able to able to communicate with cyphernode over differnet 'wires'.",
   "main": "index.js",
   "dependencies": {
     "async": "^3.1.0",
-    "cyphernode-js-sdk": "^0.0.8",
+    "cyphernode-js-sdk": "^0.0.9",
     "debug": "^4.1.1",
-    "matrix-js-sdk": "^2.4.2",
+    "matrix-js-sdk": "^3.0.0",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
@@ -17,7 +17,7 @@
     "ava": "^2.4.0"
   },
   "scripts": {
-    "test:integration": "NODE_TLS_REJECT_UNAUTHORIZED=0 node -r dotenv/config ./node_modules/ava/cli.js ./src/integrationTests/*.spec.js"
+    "test:integration": "node -r dotenv/config ./node_modules/ava/cli.js ./src/integrationTests/*.spec.js"
   },
   "repository": {
     "type": "git",

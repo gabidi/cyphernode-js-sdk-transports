@@ -1,13 +1,13 @@
-import matrix from "matrix-js-sdk";
+import matrix, { MatrixClient, MatrixEvent } from "matrix-js-sdk";
 import _debug from "debug";
 const debug = _debug("matrixutil:");
 const getSyncMatrixClient = async ({
-  user = process.env.CYPHERNODE_MATRIX_USER,
-  password = process.env.CYPHERNODE_MATRIX_PASS,
-  baseUrl = process.env.CYPHERNODE_MATRIX_SERVER,
+  user = process.env.SIFIR_MATRIX_USER,
+  password = process.env.SIFIR_MATRIX_PASS,
+  baseUrl = process.env.SIFIR_MATRIX_SERVER,
   deviceId = undefined,
   ...opts
-} = {}): Promise<matrix.MatrixClient> => {
+} = {}): Promise<MatrixClient> => {
   debug("Conneting to", baseUrl, user);
   const matrixClient = await matrix.createClient({
     baseUrl,
@@ -33,7 +33,7 @@ const getSyncMatrixClient = async ({
               debug("event.error.data is missing: ", event.error);
             }
             if (event.error.data.errcode === "M_UNKNOWN_TOKEN") {
-              debug("toggleMatrixLoginModal", true);
+              // debug("need to login", true);
             }
             matrixClient.stop();
             rej(event);
@@ -43,7 +43,6 @@ const getSyncMatrixClient = async ({
               "error",
               "Could not connect to matrix more than 3 time. Disconnecting."
             );
-            // transportMatrixClient.stop();
             rej(`Matrix client failed to sync more than ${syncFailCount}`);
           } else {
             debug(
@@ -65,4 +64,4 @@ const getSyncMatrixClient = async ({
     );
   });
 };
-export { getSyncMatrixClient };
+export { getSyncMatrixClient, MatrixClient, MatrixEvent };

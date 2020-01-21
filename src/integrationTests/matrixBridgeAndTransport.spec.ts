@@ -12,9 +12,11 @@ test.before(async t => {
   t.context = {
     getSyncMatrixClient,
     apiKey: process.env.CYPHERNODE_API_KEY,
-    baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
-    password: process.env.CYPHERNODE_MATRIX_PASS,
-    user: process.env.CYPHERNODE_MATRIX_USER
+    baseUrl: process.env.SIFIR_MATRIX_SERVER,
+    password: process.env.SIFIR_MATRIX_PASS,
+    user: process.env.SIFIR_MATRIX_USER,
+    phoneUser: process.env.SIFIR_PHONE_MATRIX_USER,
+    phoneUserPassword: process.env.SIFIR_PHONE_MATRIX_PASS
   };
 });
 test("Should be able to send message to devices directly", async t => {

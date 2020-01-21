@@ -20,11 +20,11 @@ on.
 Best way is to amend the previously mentioned .env file with the following variables:
 
 ```bash
-CYPHERNODE_MATRIX_USER=
-CYPHERNODE_MATRIX_PASS=
-CYPHERNODE_MATRIX_TEST_CLIENT_USER=
-CYPHERNODE_MATRIX_TEST_CLIENT_PASS=
-CYPHERNODE_MATRIX_SERVER=
+SIFIR_MATRIX_USER=
+SIFIR_MATRIX_PASS=
+SIFIR_MATRIX_SERVER=
+SIFIR_PHONE_MATRIX_USER=
+SIFIR_PHONE_MATRIX_PASS=
 ```
 #### Running Integration test steps:
 
@@ -37,7 +37,8 @@ docker build --tag cyphernode-js-sdk:intergrationTests
 docker run -it \
         --network=cyphernodenet \
         --env-file .env \
-        -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+	-e CYPHERNODE_GATEKEEPER_CERT_CA=$(cat test.pem)
+	# -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
         -e CYPHERNODE_GATEWAY_URL="https://dist_gatekeeper_1:443/v0/" \
         cyphernode-js-sdk:intergrationTests node /app/node_modules/ava/cli.js integrationTests/*.spec.js
 ```
@@ -46,6 +47,6 @@ A helper script that runs the exact same commands as above is located in:
 ./scripts/docker-integrationTests.sh
 ```
 ### TODO
-- E2E Encryption
-- Tor transport
-- Mqtt transport
+- ~ E2E Encryption  Done(ish)!
+- ~ Tor transport~ Done !
+
