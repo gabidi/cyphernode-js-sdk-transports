@@ -56,16 +56,25 @@ var events_1 = require("events");
 var debug_1 = __importDefault(require("debug"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var cors_1 = __importDefault(require("cors"));
+var torInboundBridgeMiddleware = function (req) {
+    var command = req.params.command;
+    var body = req.body;
+    // Decrypt / Check sign
+    var signature = req.headers["Content-Signature"];
+    if (!signature) {
+        throw "Payload is unsigned !";
+        //test for validity
+    }
+    var param = body.param, method = body.method;
+    return { method: method, param: param };
+};
+var torOutboundBridgeMsgMiddleware = function (res) {
+    //TODO
+    res.set("Content-Signature", "text/html");
+    return res;
+};
 var cyphernodeTorBridge = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, _d = _b.log, log = _d === void 0 ? debug_1.default("sifir:tor-bridge") : _d, _e = _b.bridge, bridge = _e === void 0 ? new events_1.EventEmitter() : _e, 
-    // Inject your authentication Fn here, returns
-    // TODO Type this interface
-    _f = _b.authMiddleWare, 
-    // Inject your authentication Fn here, returns
-    // TODO Type this interface
-    authMiddleWare = _f === void 0 ? function (payload) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-        return [2 /*return*/, true];
-    }); }); } : _f;
+    var _b = _a.transport, transport = _b === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _b, _c = _a.log, log = _c === void 0 ? debug_1.default("sifir:tor-bridge") : _c, _d = _a.bridge, bridge = _d === void 0 ? new events_1.EventEmitter() : _d, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     /**
      * Starts the bridge and returns the private roomId the user needs to join
      */
@@ -84,53 +93,48 @@ var cyphernodeTorBridge = function (_a) {
                     credentials: true
                 }));
                 get = transport.get, post = transport.post;
-                api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-                    var reply, method, command, param, _a, error_1;
-                    return __generator(this, function (_b) {
-                        switch (_b.label) {
+                api.post(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
+                    var reply, _a, command, method, param, _b, err_1;
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
                             case 0:
-                                method = req.method;
-                                command = req.params.command;
-                                param = method === "POST" ? req.body : req.params["0"];
+                                _c.trys.push([0, 7, , 8]);
+                                _a = inboundMiddleware(req), command = _a.command, method = _a.method, param = _a.param;
                                 log("got request", method, command, param);
-                                _b.label = 1;
+                                _b = method;
+                                switch (_b) {
+                                    case "GET": return [3 /*break*/, 1];
+                                    case "POST": return [3 /*break*/, 3];
+                                }
+                                return [3 /*break*/, 5];
                             case 1:
-                                _b.trys.push([1, 8, , 9]);
-                                if (typeof authMiddleWare == "function") {
-                                    if (!authMiddleWare({ method: method, command: command, param: param, req: req }) === true) {
-                                        throw "Authentication failed";
-                                    }
-                                }
-                                _a = method;
-                                switch (_a) {
-                                    case "GET": return [3 /*break*/, 2];
-                                    case "POST": return [3 /*break*/, 4];
-                                }
-                                return [3 /*break*/, 6];
-                            case 2:
                                 log("processing get", command);
                                 return [4 /*yield*/, get(command, param)];
+                            case 2:
+                                reply = _c.sent();
+                                return [3 /*break*/, 6];
                             case 3:
-                                reply = _b.sent();
-                                return [3 /*break*/, 7];
-                            case 4:
                                 log("processing post", command);
                                 return [4 /*yield*/, post(command, param)];
+                            case 4:
+                                reply = _c.sent();
+                                return [3 /*break*/, 6];
                             case 5:
-                                reply = _b.sent();
-                                return [3 /*break*/, 7];
-                            case 6:
                                 console.error("Unknown command method", method);
                                 return [2 /*return*/];
+                            case 6:
+                                outboundMiddleware(reply)
+                                    .status(200)
+                                    .json(__assign({}, reply));
+                                return [3 /*break*/, 8];
                             case 7:
-                                res.status(200).json(__assign({}, reply));
-                                return [3 /*break*/, 9];
-                            case 8:
-                                error_1 = _b.sent();
-                                log("Error sending command to transport", error_1);
-                                res.status(400).json({ error: error_1 });
-                                return [3 /*break*/, 9];
-                            case 9: return [2 /*return*/];
+                                err_1 = _c.sent();
+                                log("Error sending command to transport", err_1);
+                                outboundMiddleware(err_1)
+                                    .status(400)
+                                    .json({ err: err_1 });
+                                return [3 /*break*/, 8];
+                            case 8: return [2 /*return*/];
                         }
                     });
                 }); });
