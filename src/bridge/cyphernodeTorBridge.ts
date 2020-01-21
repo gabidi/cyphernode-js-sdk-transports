@@ -9,7 +9,15 @@ import cors from "cors";
 const cyphernodeTorBridge = ({
   transport = cypherNodeHttpTransport(),
   log = _debug("sifir:tor-bridge"),
-  bridge = new EventEmitter()
+  bridge = new EventEmitter(),
+  // Inject your authentication Fn here, returns
+  // TODO Type this interface
+  authMiddleWare = async (payload: {
+    method: string;
+    command: string;
+    param: any;
+    req: object;
+  }): Promise<boolean> => true
 } = {}): any => {
   /**
    * Starts the bridge and returns the private roomId the user needs to join
@@ -25,6 +33,7 @@ const cyphernodeTorBridge = ({
         credentials: true
       })
     );
+    // TODO Sync endpoint for phone to poll ?
 
     const { get, post } = transport;
     api.all(["/:command", "/:command/*"], async (req, res, next) => {
@@ -34,6 +43,11 @@ const cyphernodeTorBridge = ({
       let param = method === "POST" ? req.body : req.params["0"];
       log("got request", method, command, param);
       try {
+        if (typeof authMiddleWare == "function") {
+          if (!authMiddleWare({ method, command, param, req }) === true) {
+            throw "Authentication failed";
+          }
+        }
         switch (method) {
           case "GET":
             log("processing get", command);
@@ -50,7 +64,7 @@ const cyphernodeTorBridge = ({
         res.status(200).json({ ...reply });
       } catch (error) {
         log("Error sending command to transport", error);
-        res.status(404).json({ error });
+        res.status(400).json({ error });
       }
     });
     api.listen(bridgeApiPort);

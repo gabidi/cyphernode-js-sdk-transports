@@ -46,99 +46,131 @@ var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
 var debug = debug_1.default("sifir:bridge");
 var cypherNodeMatrixBridge = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.nodeAccountUser, nodeAccountUser = _c === void 0 ? "" : _c, _d = _b.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _b.transport, transport = _e === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _e;
-    var serverRoom;
+    var _b = _a.client, client = _b === void 0 ? matrixUtil_1.getSyncMatrixClient() : _b, _c = _a.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    if (!inboundMiddleware || !outboundMiddleware) {
+        throw "Throw must supply outbound and inbound message processing";
+    }
     var startBridge = function (_a) {
-        var _b = _a === void 0 ? {} : _a, _c = _b.signedRequestsOnly, signedRequestsOnly = _c === void 0 ? true : _c, _d = _b.signingKeys, signingKeys = _d === void 0 ? [] : _d;
+        var accountsPairedDeviceList = _a.accountsPairedDeviceList;
         return __awaiter(_this, void 0, void 0, function () {
-            var get, post, _client, _e;
+            var get, post, _client, _b;
             var _this = this;
-            return __generator(this, function (_f) {
-                switch (_f.label) {
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        debug("starting bridge", signedRequestsOnly);
+                        if (!accountsPairedDeviceList)
+                            throw "cannot start birding wihtout list of paired devices";
+                        debug("starting bridge", accountsPairedDeviceList);
                         get = transport.get, post = transport.post;
                         if (!client.then) return [3 /*break*/, 2];
                         return [4 /*yield*/, client];
                     case 1:
-                        _e = _f.sent();
+                        _b = _c.sent();
                         return [3 /*break*/, 3];
                     case 2:
-                        _e = client;
-                        _f.label = 3;
+                        _b = client;
+                        _c.label = 3;
                     case 3:
-                        _client = _e;
+                        _client = _b;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var content, sig, deviceId, _a, method, command, _b, param, nonce, reply, _c, error_1, devicesConnected, accountMessages;
-                            var _d;
-                            return __generator(this, function (_e) {
-                                switch (_e.label) {
+                            var reply, content, method, command, _a, param, nonce, payload, _b, body_1, err_1;
+                            return __generator(this, function (_c) {
+                                switch (_c.label) {
                                     case 0:
                                         debug("got event", event.getType(), event.getSender());
                                         if (event.getType() !== constants_1.events.COMMAND_REQUEST) {
                                             return [2 /*return*/];
                                         }
-                                        if (event.getSender() !== nodeAccountUser) {
-                                            // TODO should send message to user phone in this cas
-                                            console.error("Got command from a different account!");
-                                            return [2 /*return*/];
-                                        }
-                                        content = event.getContent();
-                                        debug("got command!", content);
-                                        if (signedRequestsOnly) {
-                                            sig = content.sig, deviceId = content.deviceId;
-                                            // Load the devices rsk
-                                            //
-                                            // TODO 1. validate RSK key is valid , 2. singature with rsk is valid
-                                        }
-                                        _a = JSON.parse(content.body), method = _a.method, command = _a.command, _b = _a.param, param = _b === void 0 ? null : _b, nonce = _a.nonce;
-                                        _e.label = 1;
+                                        _c.label = 1;
                                     case 1:
-                                        _e.trys.push([1, 8, , 9]);
-                                        _c = method;
-                                        switch (_c) {
-                                            case "GET": return [3 /*break*/, 2];
-                                            case "POST": return [3 /*break*/, 4];
-                                        }
-                                        return [3 /*break*/, 6];
+                                        _c.trys.push([1, 10, , 11]);
+                                        return [4 /*yield*/, inboundMiddleware({
+                                                event: event,
+                                                accountsPairedDeviceList: accountsPairedDeviceList
+                                            })];
                                     case 2:
+                                        content = _c.sent();
+                                        method = content.method, command = content.command, _a = content.param, param = _a === void 0 ? null : _a, nonce = content.nonce;
+                                        if (!method.length || !command.length || !nonce.length)
+                                            throw "Invalid event content parsed";
+                                        debug("got command!", method, command);
+                                        payload = void 0;
+                                        _b = method;
+                                        switch (_b) {
+                                            case "GET": return [3 /*break*/, 3];
+                                            case "POST": return [3 /*break*/, 5];
+                                        }
+                                        return [3 /*break*/, 7];
+                                    case 3:
                                         debug("processing get", command);
                                         return [4 /*yield*/, get(command, param)];
-                                    case 3:
-                                        reply = _e.sent();
-                                        return [3 /*break*/, 7];
                                     case 4:
+                                        payload = _c.sent();
+                                        return [3 /*break*/, 8];
+                                    case 5:
                                         debug("processing post", command);
                                         return [4 /*yield*/, post(command, param)];
-                                    case 5:
-                                        reply = _e.sent();
-                                        return [3 /*break*/, 7];
                                     case 6:
-                                        console.error("Unknown command method", method);
+                                        payload = _c.sent();
+                                        return [3 /*break*/, 8];
+                                    case 7:
+                                        console.error("Unknown command method", method, command);
                                         return [2 /*return*/];
-                                    case 7: return [3 /*break*/, 9];
                                     case 8:
-                                        error_1 = _e.sent();
-                                        debug("Error sending command to transport", error_1);
-                                        reply = { error: error_1 };
-                                        return [3 /*break*/, 9];
-                                    case 9: return [4 /*yield*/, _client.getDevices()];
-                                    case 10:
-                                        devicesConnected = _e.sent();
-                                        accountMessages = devicesConnected.devices.reduce(function (payload, _a) {
-                                            var device_id = _a.device_id;
-                                            payload[device_id] = {
-                                                body: JSON.stringify({ reply: reply, nonce: nonce }),
-                                                msgtype: constants_1.events.COMMAND_REQUEST
-                                            };
-                                            return payload;
+                                        body_1 = JSON.stringify({ reply: payload, nonce: nonce });
+                                        return [4 /*yield*/, outboundMiddleware(body_1)];
+                                    case 9:
+                                        body_1 = _c.sent();
+                                        reply = Object.entries(accountsPairedDeviceList).reduce(function (dict, _a) {
+                                            var account = _a[0], devices = _a[1];
+                                            debug("preparing reply to", account, devices);
+                                            dict[account] = {};
+                                            devices.forEach(function (device) {
+                                                dict[account][device] = { body: body_1 };
+                                            });
+                                            return dict;
                                         }, {});
-                                        debug("sending reply to", nonce, reply, accountMessages);
-                                        return [4 /*yield*/, _client.sendToDevice(constants_1.events.COMMAND_REPLY, (_d = {},
-                                                _d[nodeAccountUser] = accountMessages,
-                                                _d), nonce)];
+                                        return [3 /*break*/, 11];
+                                    case 10:
+                                        err_1 = _c.sent();
+                                        debug("Error sending command to transport", err_1);
+                                        reply = { err: err_1 };
+                                        return [3 /*break*/, 11];
                                     case 11:
-                                        _e.sent();
+                                        debug("Bridge sending command reply", reply);
+                                        return [4 /*yield*/, _client.sendToDevice(constants_1.events.COMMAND_REPLY, reply)];
+                                    case 12:
+                                        _c.sent();
+                                        //const devicesConnected = await _client.getDevices();
+                                        //const accountMessages = devicesConnected.devices.reduce(
+                                        //  (payload, { device_id }) => {
+                                        //    payload[device_id] = {
+                                        //      body: JSON.stringify({ reply, nonce }),
+                                        //      msgtype: events.COMMAND_REQUEST
+                                        //    };
+                                        //    return payload;
+                                        //  },
+                                        //  {}
+                                        //);
+                                        //const devicesConnected = await _client.getDevices();
+                                        //const accountMessages = devicesConnected.devices.reduce(
+                                        //  (payload, { device_id }) => {
+                                        //    payload[device_id] = {
+                                        //      body: JSON.stringify({ reply, nonce }),
+                                        //      msgtype: events.COMMAND_REQUEST
+                                        //    };
+                                        //    return payload;
+                                        //  },
+                                        //  {}
+                                        //);
+                                        //debug("sending reply to", nonce, reply, accountMessages);
+                                        //await _client.sendToDevice(
+                                        //  events.COMMAND_REPLY,
+                                        //  {
+                                        //    [nodeAccountUser]: accountMessages
+                                        //  },
+                                        //  nonce
+                                        //);
                                         debug("finished processing command");
                                         return [2 /*return*/];
                                 }

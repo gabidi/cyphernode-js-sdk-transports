@@ -34,6 +34,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var ava_1 = require("ava");
@@ -41,26 +44,40 @@ var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var cypherNodeMatrixBridge_1 = require("../bridge/cypherNodeMatrixBridge");
 var cyphernodeMatrixTransport_1 = require("../transports/cyphernodeMatrixTransport");
 var matrixUtil_1 = require("../lib/matrixUtil");
+var sinon_1 = __importDefault(require("sinon"));
 var test = ava_1.serial; //FIXME this bullshit, interface for Matrix
 test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         t.context = {
             getSyncMatrixClient: matrixUtil_1.getSyncMatrixClient,
             apiKey: process.env.CYPHERNODE_API_KEY,
-            baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
-            password: process.env.CYPHERNODE_MATRIX_PASS,
-            user: process.env.CYPHERNODE_MATRIX_USER
+            baseUrl: process.env.SIFIR_MATRIX_SERVER,
+            password: process.env.SIFIR_MATRIX_PASS,
+            user: process.env.SIFIR_MATRIX_USER,
+            phoneUser: process.env.SIFIR_PHONE_MATRIX_USER,
+            phoneUserPassword: process.env.SIFIR_PHONE_MATRIX_PASS
         };
         return [2 /*return*/];
     });
 }); });
 test("Should be able to send message to devices directly", function (t) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, nodeDeviceId, serverMatrixClient, startBridge, clientId, transportMatrixClient, btcClient, _b, _c, hash;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+    var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, nodeDeviceId, clientId, bridgeInboundMiddleware, bridgeOutboundMiddleware, serverMatrixClient, startBridge, transportInboundmiddleware, transportOutboundmiddleware, transportMatrixClient, transport, btcClient, hash;
+    var _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
                 _a = t.context, baseUrl = _a.baseUrl, getSyncMatrixClient = _a.getSyncMatrixClient, apiKey = _a.apiKey, user = _a.user, password = _a.password;
                 nodeDeviceId = "myCyphernode";
+                clientId = "myPhone";
+                bridgeInboundMiddleware = function (_a) {
+                    var event = _a.event, accountsPairedDeviceList = _a.accountsPairedDeviceList;
+                    var eventSender = event.getSender();
+                    t.is(eventSender, user);
+                    t.true(Object.keys(accountsPairedDeviceList).includes(eventSender));
+                    var content = event.getContent();
+                    return JSON.parse(content.body);
+                };
+                bridgeOutboundMiddleware = sinon_1.default.stub().resolvesArg(0);
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
                         password: password,
@@ -68,18 +85,28 @@ test("Should be able to send message to devices directly", function (t) { return
                         deviceId: nodeDeviceId
                     })];
             case 1:
-                serverMatrixClient = _d.sent();
+                serverMatrixClient = _c.sent();
                 startBridge = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge({
-                    nodeAccountUser: user,
                     transport: cyphernode_js_sdk_1.cypherNodeHttpTransport(),
-                    client: serverMatrixClient
+                    client: serverMatrixClient,
+                    inboundMiddleware: bridgeInboundMiddleware,
+                    outboundMiddleware: bridgeOutboundMiddleware
                 }).startBridge;
-                clientId = "myPhone";
                 return [4 /*yield*/, startBridge({
-                        authorizedDevices: [clientId]
+                        accountsPairedDeviceList: (_b = {},
+                            _b[user] = [clientId],
+                            _b)
                     })];
             case 2:
-                _d.sent();
+                _c.sent();
+                transportInboundmiddleware = function (_a) {
+                    var event = _a.event, nodeAccountUser = _a.nodeAccountUser;
+                    t.true(event.getSender() === nodeAccountUser);
+                    var _b = event.getContent(), body = _b.body, msgtype = _b.msgtype;
+                    var _c = JSON.parse(body), nonce = _c.nonce, reply = _c.reply;
+                    return { nonce: nonce, reply: reply };
+                };
+                transportOutboundmiddleware = sinon_1.default.stub().resolvesArg(0);
                 return [4 /*yield*/, getSyncMatrixClient({
                         baseUrl: baseUrl,
                         password: password,
@@ -87,21 +114,23 @@ test("Should be able to send message to devices directly", function (t) { return
                         deviceId: clientId
                     })];
             case 3:
-                transportMatrixClient = _d.sent();
-                _b = cyphernode_js_sdk_1.btcClient;
-                _c = {};
+                transportMatrixClient = _c.sent();
                 return [4 /*yield*/, cyphernodeMatrixTransport_1.cypherNodeMatrixTransport({
                         nodeAccountUser: user,
                         nodeDeviceId: nodeDeviceId,
                         client: transportMatrixClient,
-                        msgTimeout: 1200000
+                        msgTimeout: 1200000,
+                        inboundMiddleware: transportInboundmiddleware,
+                        outboundMiddleware: transportOutboundmiddleware
                     })];
             case 4:
-                btcClient = _b.apply(void 0, [(_c.transport = _d.sent(),
-                        _c)]);
+                transport = _c.sent();
+                btcClient = cyphernode_js_sdk_1.btcClient({ transport: transport });
                 return [4 /*yield*/, btcClient.getBestBlockHash()];
             case 5:
-                hash = _d.sent();
+                hash = _c.sent();
+                t.true(transportOutboundmiddleware.calledOnce);
+                t.true(bridgeOutboundMiddleware.calledOnce);
                 t.true(!!hash.length);
                 return [2 /*return*/];
         }

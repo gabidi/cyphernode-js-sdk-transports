@@ -56,19 +56,28 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var matrix_js_sdk_1 = __importDefault(require("matrix-js-sdk"));
+var matrix_js_sdk_1 = __importStar(require("matrix-js-sdk"));
+exports.MatrixClient = matrix_js_sdk_1.MatrixClient;
+exports.MatrixEvent = matrix_js_sdk_1.MatrixEvent;
 var debug_1 = __importDefault(require("debug"));
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
     if (_a === void 0) { _a = {}; }
     return __awaiter(_this, void 0, void 0, function () {
         var matrixClient, syncFailCount;
-        var _b = _a.user, user = _b === void 0 ? process.env.CYPHERNODE_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.CYPHERNODE_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.CYPHERNODE_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId"]);
+        var _b = _a.user, user = _b === void 0 ? process.env.SIFIR_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.SIFIR_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.SIFIR_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId"]);
         return __generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
@@ -94,14 +103,13 @@ var getSyncMatrixClient = function (_a) {
                                             debug("event.error.data is missing: ", event.error);
                                         }
                                         if (event.error.data.errcode === "M_UNKNOWN_TOKEN") {
-                                            debug("toggleMatrixLoginModal", true);
+                                            // debug("need to login", true);
                                         }
                                         matrixClient.stop();
                                         rej(event);
                                     }
                                     if (syncFailCount >= 3) {
                                         debug("error", "Could not connect to matrix more than 3 time. Disconnecting.");
-                                        // transportMatrixClient.stop();
                                         rej("Matrix client failed to sync more than " + syncFailCount);
                                     }
                                     else {

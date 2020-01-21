@@ -68,15 +68,15 @@ var events_1 = require("events");
 var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
 var cypherNodeMatrixTransport = function (_a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.nodeDeviceId, nodeDeviceId = _c === void 0 ? "" : _c, _d = _b.nodeAccountUser, nodeAccountUser = _d === void 0 ? "" : _d, _e = _b.client, client = _e === void 0 ? matrixUtil_1.getSyncMatrixClient() : _e, _f = _b.emitter, emitter = _f === void 0 ? new events_1.EventEmitter() : _f, _g = _b.msgTimeout, msgTimeout = _g === void 0 ? 30000 : _g, _h = _b.debug, debug = _h === void 0 ? debug_1.default("sifir:transport") : _h;
+    var _b = _a.nodeDeviceId, nodeDeviceId = _b === void 0 ? "" : _b, _c = _a.nodeAccountUser, nodeAccountUser = _c === void 0 ? "" : _c, _d = _a.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _a.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _a.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _a.maxMsgConcurrency, maxMsgConcurrency = _g === void 0 ? 2 : _g, _h = _a.debug, debug = _h === void 0 ? debug_1.default("sifir:transport") : _h, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     return __awaiter(_this, void 0, void 0, function () {
         var matrixClient, _j, _commandQueue, _sendCommand, get, post;
         var _this = this;
         return __generator(this, function (_k) {
             switch (_k.label) {
                 case 0:
-                    if (!nodeDeviceId || !nodeAccountUser)
-                        throw "Must provide device id to send commands to ";
+                    if (!inboundMiddleware || !outboundMiddleware)
+                        throw "Must supply inboud and outbound message middleware";
                     if (!client.then) return [3 /*break*/, 2];
                     return [4 /*yield*/, client];
                 case 1:
@@ -88,46 +88,53 @@ var cypherNodeMatrixTransport = function (_a) {
                 case 3:
                     matrixClient = _j;
                     // Setup room lsner, re-emits room commands as nonce events on emitter:w
-                    matrixClient.on("toDeviceEvent", function (event) {
-                        // // we know we only want to respond to messages
-                        if (event.getType() !== constants_1.events.COMMAND_REPLY)
-                            return;
-                        debug(constants_1.events.COMMAND_REPLY, event.getContent());
-                        if (event.getSender() !== nodeAccountUser) {
-                            // TODO should send message to user phone in this cas
-                            console.error("Got command reply from a different account!");
-                            return;
-                        }
-                        var _a = event.getContent(), body = _a.body, msgtype = _a.msgtype;
-                        var _b = JSON.parse(body), nonce = _b.nonce, reply = _b.reply;
-                        emitter.emit(nonce, __assign({}, reply));
-                    });
+                    matrixClient.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
+                        var _a, nonce, reply;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    // // we know we only want to respond to messages
+                                    if (event.getType() !== constants_1.events.COMMAND_REPLY)
+                                        return [2 /*return*/];
+                                    debug(constants_1.events.COMMAND_REPLY, event.getContent());
+                                    return [4 /*yield*/, inboundMiddleware({
+                                            event: event,
+                                            nodeAccountUser: nodeAccountUser
+                                        })];
+                                case 1:
+                                    _a = _b.sent(), nonce = _a.nonce, reply = _a.reply;
+                                    emitter.emit(nonce, __assign({}, reply));
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
                     _commandQueue = async_1.queue(function (_a, cb) {
                         var method = _a.method, command = _a.command, param = _a.param, nonce = _a.nonce;
                         return __awaiter(_this, void 0, void 0, function () {
-                            var payload;
+                            var body, payload;
                             var _b, _c;
                             return __generator(this, function (_d) {
                                 switch (_d.label) {
-                                    case 0:
+                                    case 0: return [4 /*yield*/, outboundMiddleware(JSON.stringify({ method: method, command: command, param: param, nonce: nonce }))];
+                                    case 1:
+                                        body = _d.sent();
                                         payload = (_b = {},
                                             _b[nodeAccountUser] = (_c = {},
                                                 _c[nodeDeviceId] = {
-                                                    body: JSON.stringify({ method: method, command: command, param: param, nonce: nonce }),
-                                                    msgtype: constants_1.events.COMMAND_REQUEST
+                                                    body: body
                                                 },
                                                 _c),
                                             _b);
                                         debug("Transport::Command queue sending", method, command, nonce, payload);
-                                        return [4 /*yield*/, matrixClient.sendToDevice(constants_1.events.COMMAND_REQUEST, payload, nonce)];
-                                    case 1:
+                                        return [4 /*yield*/, matrixClient.sendToDevice(constants_1.events.COMMAND_REQUEST, payload)];
+                                    case 2:
                                         _d.sent();
                                         cb();
                                         return [2 /*return*/];
                                 }
                             });
                         });
-                    }, 1);
+                    }, maxMsgConcurrency);
                     _sendCommand = function (_a) {
                         var method = _a.method, command = _a.command, payload = _a.payload;
                         var nonce = v4_1.default();
