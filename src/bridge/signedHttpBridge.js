@@ -69,7 +69,7 @@ var signedHttpBridge = function (_a) {
                 api = express_1.default();
                 api.use(body_parser_1.default.json());
                 get = transport.get, post = transport.post;
-                api.post(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
+                api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
                     var reply, _a, command, method, param, _b, err_1;
                     return __generator(this, function (_c) {
                         switch (_c.label) {

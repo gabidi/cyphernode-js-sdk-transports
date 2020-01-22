@@ -29,7 +29,7 @@ const signedHttpBridge = ({
     // TODO Sync endpoint for phone to poll ?
 
     const { get, post } = transport;
-    api.post(["/:command", "/:command/*"], async (req, res, next) => {
+    api.all(["/:command", "/:command/*"], async (req, res, next) => {
       let reply;
       //let method = req.method;
       //let { command } = req.params;
