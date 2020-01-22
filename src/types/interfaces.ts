@@ -1,12 +1,13 @@
 import { MatrixClient } from "matrix-js-sdk";
 import { EventEmitter } from "events";
-interface BridgeMsgMiddleWare {
+import express from "express";
+interface MatrixBridgeMsgMiddleWare {
   inboundMiddleware(
     req: any
   ): Promise<{ method: string; command: string; param: any; nonce: string }>;
   outboundMiddleware(msg: string): Promise<string>;
 }
-interface MatrixBridgeParam extends BridgeMsgMiddleWare {
+interface MatrixBridgeParam extends MatrixBridgeMsgMiddleWare {
   client: MatrixClient | Promise<MatrixClient>;
   // TODO import this sdk repo
   transport: { get: Function; post: Function };
@@ -27,10 +28,26 @@ interface MatrixTransportParam extends TransportMsgMiddleWare {
 interface AccountDevicesDict {
   [account: string]: string[];
 }
+type HttpInboundMsgBridgeMiddleware = (
+  req: express.Request
+) => Promise<{ command: string; method: string; param: any }>;
+type HttpOutboundResponseMiddleware = (
+  req: express.Response
+) => Promise<express.Response>;
+interface SignedHttpBridgeParam {
+  transport: { get: Function; post: Function };
+  log: Function;
+  bridge: EventEmitter;
+  inboundMiddleware: HttpInboundMsgBridgeMiddleware;
+  outboundMiddleware: HttpOutboundResponseMiddleware;
+}
 
 export {
-  BridgeMsgMiddleWare,
+  HttpInboundMsgBridgeMiddleware,
+  HttpOutboundResponseMiddleware,
+  MatrixBridgeMsgMiddleWare,
   MatrixBridgeParam,
   MatrixTransportParam,
+  SignedHttpBridgeParam,
   AccountDevicesDict
 };
