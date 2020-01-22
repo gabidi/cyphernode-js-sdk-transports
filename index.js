@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var cypherNodeMatrixBridge_1 = require("./src/bridge/cypherNodeMatrixBridge");
 exports.cypherNodeMatrixBridge = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge;
-var cyphernodeTorBridge_1 = require("./src/bridge/cyphernodeTorBridge");
-exports.cyphernodeTorBridge = cyphernodeTorBridge_1.cyphernodeTorBridge;
+var signedHttpBridge_1 = require("./src/bridge/signedHttpBridge");
+exports.signedHttpBridge = signedHttpBridge_1.signedHttpBridge;
 var matrixUtil_1 = require("./src/lib/matrixUtil");
 exports.getSyncMatrixClient = matrixUtil_1.getSyncMatrixClient;
 exports.MatrixClient = matrixUtil_1.MatrixClient;

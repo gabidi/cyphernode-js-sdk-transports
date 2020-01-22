@@ -1,10 +1,20 @@
 export { cypherNodeMatrixBridge } from "./src/bridge/cypherNodeMatrixBridge";
-export { cyphernodeTorBridge } from "./src/bridge/cyphernodeTorBridge";
+export { signedHttpBridge } from "./src/bridge/signedHttpBridge";
 export {
   getSyncMatrixClient,
   MatrixClient,
-  MatrixEvent,
+  MatrixEvent
 } from "./src/lib/matrixUtil";
+
+export {
+  HttpInboundMsgBridgeMiddleware,
+  HttpOutboundResponseMiddleware,
+  MatrixBridgeMsgMiddleWare,
+  MatrixBridgeParam,
+  MatrixTransportParam,
+  SignedHttpBridgeParam,
+  AccountDevicesDict
+} from "./src/types/interfaces";
 export {
   cypherNodeMatrixTransport
 } from "./src/transports/cyphernodeMatrixTransport";
