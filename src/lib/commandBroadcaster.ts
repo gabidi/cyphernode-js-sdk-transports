@@ -17,7 +17,7 @@ const commandBroadcaster = ({ source, bridge, timeoutMs = 3000 } = {}) => {
         () => rej(`${command}/${method} with ${nonce} timedout!`),
         timeoutMs
       );
-      bridge.on(nonce, (payload: any) => {
+      bridge.once(nonce, (payload: any) => {
         clearTimeout(timeout);
         const { err } = payload;
         if (err) rej({ err });
