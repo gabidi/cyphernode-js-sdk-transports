@@ -50,7 +50,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var express_1 = __importDefault(require("express"));
 var events_1 = require("events");
 var debug_1 = __importDefault(require("debug"));
@@ -58,7 +57,11 @@ var body_parser_1 = __importDefault(require("body-parser"));
 var commandBroadcaster_1 = require("../lib/commandBroadcaster");
 var v4_1 = __importDefault(require("uuid/v4"));
 var signedHttpBridge = function (_a) {
-    var _b = _a.transport, transport = _b === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _b, _c = _a.log, log = _c === void 0 ? debug_1.default("sifir:tor-bridge") : _c, _d = _a.bridge, bridge = _d === void 0 ? new events_1.EventEmitter() : _d, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    var 
+    // transport = cypherNodeHttpTransport(),
+    _b = _a.log, 
+    // transport = cypherNodeHttpTransport(),
+    log = _b === void 0 ? debug_1.default("sifir:tor-bridge") : _b, _c = _a.bridge, bridge = _c === void 0 ? new events_1.EventEmitter() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     var syncEmitCommand = commandBroadcaster_1.commandBroadcaster({
         source: "signedHttpBridge",
         bridge: bridge

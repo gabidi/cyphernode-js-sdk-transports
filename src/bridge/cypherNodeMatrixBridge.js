@@ -39,7 +39,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var events_1 = require("events");
 var debug_1 = __importDefault(require("debug"));
 var matrixUtil_1 = require("../lib/matrixUtil");
@@ -47,7 +46,11 @@ var constants_1 = require("../constants");
 var commandBroadcaster_1 = require("../lib/commandBroadcaster");
 var debug = debug_1.default("sifir:bridge");
 var cypherNodeMatrixBridge = function (_a) {
-    var _b = _a.client, client = _b === void 0 ? matrixUtil_1.getSyncMatrixClient() : _b, _c = _a.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, _d = _a.bridge, bridge = _d === void 0 ? new events_1.EventEmitter() : _d, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    var _b = _a.client, client = _b === void 0 ? matrixUtil_1.getSyncMatrixClient() : _b, 
+    // transport = cypherNodeHttpTransport(),
+    _c = _a.bridge, 
+    // transport = cypherNodeHttpTransport(),
+    bridge = _c === void 0 ? new events_1.EventEmitter() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     if (!inboundMiddleware || !outboundMiddleware) {
         throw "Throw must supply outbound and inbound message processing";
     }

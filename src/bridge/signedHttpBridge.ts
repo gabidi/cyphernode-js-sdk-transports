@@ -8,7 +8,7 @@ import { SignedHttpBridgeParam } from "../types/interfaces";
 import { commandBroadcaster } from "../lib/commandBroadcaster";
 import uuid from "uuid/v4";
 const signedHttpBridge = ({
-  transport = cypherNodeHttpTransport(),
+  // transport = cypherNodeHttpTransport(),
   log = _debug("sifir:tor-bridge"),
   bridge = new EventEmitter(),
   inboundMiddleware,

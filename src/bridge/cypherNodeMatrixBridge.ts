@@ -12,7 +12,7 @@ import { commandBroadcaster } from "../lib/commandBroadcaster";
 const debug = _debug("sifir:bridge");
 const cypherNodeMatrixBridge = ({
   client = getSyncMatrixClient(),
-  transport = cypherNodeHttpTransport(),
+  // transport = cypherNodeHttpTransport(),
   bridge = new EventEmitter(),
   inboundMiddleware,
   outboundMiddleware
