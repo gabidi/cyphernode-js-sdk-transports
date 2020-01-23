@@ -22,7 +22,10 @@ const cypherNodeMatrixBridge = ({
   if (!inboundMiddleware || !outboundMiddleware) {
     throw "Throw must supply outbound and inbound message processing";
   }
-  const { syncEmitCommand } = commandBroadcaster({ bridge });
+  const { syncEmitCommand } = commandBroadcaster({
+    source: "matrixBridge",
+    bridge
+  });
   const startBridge = async ({
     accountsPairedDeviceList
   }: {

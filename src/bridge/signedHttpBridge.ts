@@ -14,7 +14,10 @@ const signedHttpBridge = ({
   inboundMiddleware,
   outboundMiddleware
 }: SignedHttpBridgeParam): express => {
-  const { syncEmitCommand } = commandBroadcaster({ bridge });
+  const { syncEmitCommand } = commandBroadcaster({
+    source: "signedHttpBridge",
+    bridge
+  });
   const startBridge = async ({ bridgeApiPort = 3010 } = {}): Promise<void> => {
     const api = express();
     api.use(bodyParser.json());

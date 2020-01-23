@@ -1,5 +1,6 @@
-const commandBroadcaster = ({ bridge, timeoutMs = 3000 } = {}) => {
+const commandBroadcaster = ({ source, bridge, timeoutMs = 3000 } = {}) => {
   if (!bridge) "Must init commandBroadcaster with event emitter as bridge";
+  if (!source) "Must init commandBroadcaster with source";
   const syncEmitCommand = ({
     command,
     method,
@@ -23,7 +24,13 @@ const commandBroadcaster = ({ bridge, timeoutMs = 3000 } = {}) => {
         else res(payload);
       });
     });
-    bridge.emit("torBridgeCommand", { command, method, param, nonce });
+    bridge.emit("sifirBridgeCommand", {
+      source,
+      command,
+      method,
+      param,
+      nonce
+    });
     return replyPromise;
   };
   return { syncEmitCommand };

@@ -39,6 +39,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * FIXME THIS DOESNT WORK WITH NEW INFRA RE_WRTE
+ */
 var ava_1 = require("ava");
 var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
 var cypherNodeMatrixBridge_1 = require("../bridge/cypherNodeMatrixBridge");

@@ -51,7 +51,10 @@ var cypherNodeMatrixBridge = function (_a) {
     if (!inboundMiddleware || !outboundMiddleware) {
         throw "Throw must supply outbound and inbound message processing";
     }
-    var syncEmitCommand = commandBroadcaster_1.commandBroadcaster({ bridge: bridge }).syncEmitCommand;
+    var syncEmitCommand = commandBroadcaster_1.commandBroadcaster({
+        source: "matrixBridge",
+        bridge: bridge
+    }).syncEmitCommand;
     var startBridge = function (_a) {
         var accountsPairedDeviceList = _a.accountsPairedDeviceList;
         return __awaiter(_this, void 0, void 0, function () {

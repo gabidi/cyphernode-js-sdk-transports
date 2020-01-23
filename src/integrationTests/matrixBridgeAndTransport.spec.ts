@@ -1,3 +1,6 @@
+/**
+ * FIXME THIS DOESNT WORK WITH NEW INFRA RE_WRTE
+ */
 import { serial, TestInterface } from "ava";
 import {
   btcClient as _btcClient,
