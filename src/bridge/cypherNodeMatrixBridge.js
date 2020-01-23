@@ -39,17 +39,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-// FIXME update this on next cyphernode sdk release
 var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
+var events_1 = require("events");
 var debug_1 = __importDefault(require("debug"));
 var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
+var commandBroadcaster_1 = require("../lib/commandBroadcaster");
 var debug = debug_1.default("sifir:bridge");
 var cypherNodeMatrixBridge = function (_a) {
-    var _b = _a.client, client = _b === void 0 ? matrixUtil_1.getSyncMatrixClient() : _b, _c = _a.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    var _b = _a.client, client = _b === void 0 ? matrixUtil_1.getSyncMatrixClient() : _b, _c = _a.transport, transport = _c === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _c, _d = _a.bridge, bridge = _d === void 0 ? new events_1.EventEmitter() : _d, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     if (!inboundMiddleware || !outboundMiddleware) {
         throw "Throw must supply outbound and inbound message processing";
     }
+    var syncEmitCommand = commandBroadcaster_1.commandBroadcaster({ bridge: bridge }).syncEmitCommand;
     var startBridge = function (_a) {
         var accountsPairedDeviceList = _a.accountsPairedDeviceList;
         return __awaiter(_this, void 0, void 0, function () {
@@ -73,54 +75,39 @@ var cypherNodeMatrixBridge = function (_a) {
                     case 3:
                         _client = _b;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var reply, content, method, command, _a, param, nonce, payload, _b, body_1, err_1;
-                            return __generator(this, function (_c) {
-                                switch (_c.label) {
+                            var reply, content, method, command, _a, param, nonce, payload, body_1, err_1;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
                                     case 0:
                                         debug("got event", event.getType(), event.getSender());
                                         if (event.getType() !== constants_1.events.COMMAND_REQUEST) {
                                             return [2 /*return*/];
                                         }
-                                        _c.label = 1;
+                                        _b.label = 1;
                                     case 1:
-                                        _c.trys.push([1, 10, , 11]);
+                                        _b.trys.push([1, 5, , 6]);
                                         return [4 /*yield*/, inboundMiddleware({
                                                 event: event,
                                                 accountsPairedDeviceList: accountsPairedDeviceList
                                             })];
                                     case 2:
-                                        content = _c.sent();
+                                        content = _b.sent();
                                         method = content.method, command = content.command, _a = content.param, param = _a === void 0 ? null : _a, nonce = content.nonce;
                                         if (!method.length || !command.length || !nonce.length)
                                             throw "Invalid event content parsed";
                                         debug("got command!", method, command);
-                                        payload = void 0;
-                                        _b = method;
-                                        switch (_b) {
-                                            case "GET": return [3 /*break*/, 3];
-                                            case "POST": return [3 /*break*/, 5];
-                                        }
-                                        return [3 /*break*/, 7];
+                                        return [4 /*yield*/, syncEmitCommand({
+                                                method: method,
+                                                command: command,
+                                                param: param,
+                                                nonce: nonce
+                                            })];
                                     case 3:
-                                        debug("processing get", command);
-                                        return [4 /*yield*/, get(command, param)];
-                                    case 4:
-                                        payload = _c.sent();
-                                        return [3 /*break*/, 8];
-                                    case 5:
-                                        debug("processing post", command);
-                                        return [4 /*yield*/, post(command, param)];
-                                    case 6:
-                                        payload = _c.sent();
-                                        return [3 /*break*/, 8];
-                                    case 7:
-                                        console.error("Unknown command method", method, command);
-                                        return [2 /*return*/];
-                                    case 8:
+                                        payload = _b.sent();
                                         body_1 = JSON.stringify({ reply: payload, nonce: nonce });
                                         return [4 /*yield*/, outboundMiddleware(body_1)];
-                                    case 9:
-                                        body_1 = _c.sent();
+                                    case 4:
+                                        body_1 = _b.sent();
                                         reply = Object.entries(accountsPairedDeviceList).reduce(function (dict, _a) {
                                             var account = _a[0], devices = _a[1];
                                             debug("preparing reply to", account, devices);
@@ -130,47 +117,17 @@ var cypherNodeMatrixBridge = function (_a) {
                                             });
                                             return dict;
                                         }, {});
-                                        return [3 /*break*/, 11];
-                                    case 10:
-                                        err_1 = _c.sent();
+                                        return [3 /*break*/, 6];
+                                    case 5:
+                                        err_1 = _b.sent();
                                         debug("Error sending command to transport", err_1);
                                         reply = { err: err_1 };
-                                        return [3 /*break*/, 11];
-                                    case 11:
+                                        return [3 /*break*/, 6];
+                                    case 6:
                                         debug("Bridge sending command reply", reply);
                                         return [4 /*yield*/, _client.sendToDevice(constants_1.events.COMMAND_REPLY, reply)];
-                                    case 12:
-                                        _c.sent();
-                                        //const devicesConnected = await _client.getDevices();
-                                        //const accountMessages = devicesConnected.devices.reduce(
-                                        //  (payload, { device_id }) => {
-                                        //    payload[device_id] = {
-                                        //      body: JSON.stringify({ reply, nonce }),
-                                        //      msgtype: events.COMMAND_REQUEST
-                                        //    };
-                                        //    return payload;
-                                        //  },
-                                        //  {}
-                                        //);
-                                        //const devicesConnected = await _client.getDevices();
-                                        //const accountMessages = devicesConnected.devices.reduce(
-                                        //  (payload, { device_id }) => {
-                                        //    payload[device_id] = {
-                                        //      body: JSON.stringify({ reply, nonce }),
-                                        //      msgtype: events.COMMAND_REQUEST
-                                        //    };
-                                        //    return payload;
-                                        //  },
-                                        //  {}
-                                        //);
-                                        //debug("sending reply to", nonce, reply, accountMessages);
-                                        //await _client.sendToDevice(
-                                        //  events.COMMAND_REPLY,
-                                        //  {
-                                        //    [nodeAccountUser]: accountMessages
-                                        //  },
-                                        //  nonce
-                                        //);
+                                    case 7:
+                                        _b.sent();
                                         debug("finished processing command");
                                         return [2 /*return*/];
                                 }

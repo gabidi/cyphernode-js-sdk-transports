@@ -1,4 +1,3 @@
-// FIXME update this on next cyphernode sdk release
 import { cypherNodeHttpTransport } from "cyphernode-js-sdk";
 import matrix from "matrix-js-sdk";
 import { queue } from "async";
@@ -8,10 +7,13 @@ import _debug from "debug";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";
 import { MatrixBridgeParam, AccountDevicesDict } from "../types/interfaces";
+import { commandBroadcaster } from "../lib/commandBroadcaster";
+
 const debug = _debug("sifir:bridge");
 const cypherNodeMatrixBridge = ({
   client = getSyncMatrixClient(),
   transport = cypherNodeHttpTransport(),
+  bridge = new EventEmitter(),
   inboundMiddleware,
   outboundMiddleware
 }: MatrixBridgeParam): {
@@ -20,6 +22,7 @@ const cypherNodeMatrixBridge = ({
   if (!inboundMiddleware || !outboundMiddleware) {
     throw "Throw must supply outbound and inbound message processing";
   }
+  const { syncEmitCommand } = commandBroadcaster({ bridge });
   const startBridge = async ({
     accountsPairedDeviceList
   }: {
@@ -45,20 +48,25 @@ const cypherNodeMatrixBridge = ({
         if (!method.length || !command.length || !nonce.length)
           throw "Invalid event content parsed";
         debug("got command!", method, command);
-        let payload;
-        switch (method) {
-          case "GET":
-            debug("processing get", command);
-            payload = await get(command, param);
-            break;
-          case "POST":
-            debug("processing post", command);
-            payload = await post(command, param);
-            break;
-          default:
-            console.error("Unknown command method", method, command);
-            return;
-        }
+        const payload = await syncEmitCommand({
+          method,
+          command,
+          param,
+          nonce
+        });
+        //switch (method) {
+        //  case "GET":
+        //    debug("processing get", command);
+        //    payload = await get(command, param);
+        //    break;
+        //  case "POST":
+        //    debug("processing post", command);
+        //    payload = await post(command, param);
+        //    break;
+        //  default:
+        //    console.error("Unknown command method", method, command);
+        //    return;
+        //}
         let body = JSON.stringify({ reply: payload, nonce });
         body = await outboundMiddleware(body);
         reply = Object.entries(accountsPairedDeviceList).reduce(
@@ -78,36 +86,6 @@ const cypherNodeMatrixBridge = ({
       }
       debug("Bridge sending command reply", reply);
       await _client.sendToDevice(events.COMMAND_REPLY, reply);
-      //const devicesConnected = await _client.getDevices();
-      //const accountMessages = devicesConnected.devices.reduce(
-      //  (payload, { device_id }) => {
-      //    payload[device_id] = {
-      //      body: JSON.stringify({ reply, nonce }),
-      //      msgtype: events.COMMAND_REQUEST
-      //    };
-      //    return payload;
-      //  },
-      //  {}
-      //);
-      //const devicesConnected = await _client.getDevices();
-      //const accountMessages = devicesConnected.devices.reduce(
-      //  (payload, { device_id }) => {
-      //    payload[device_id] = {
-      //      body: JSON.stringify({ reply, nonce }),
-      //      msgtype: events.COMMAND_REQUEST
-      //    };
-      //    return payload;
-      //  },
-      //  {}
-      //);
-      //debug("sending reply to", nonce, reply, accountMessages);
-      //await _client.sendToDevice(
-      //  events.COMMAND_REPLY,
-      //  {
-      //    [nodeAccountUser]: accountMessages
-      //  },
-      //  nonce
-      //);
       debug("finished processing command");
     });
     debug("finish starting bridge");

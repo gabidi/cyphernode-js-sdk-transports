@@ -5,6 +5,8 @@ import _debug from "debug";
 import { events } from "../constants";
 import bodyParser from "body-parser";
 import { SignedHttpBridgeParam } from "../types/interfaces";
+import { commandBroadcaster } from "../lib/commandBroadcaster";
+import uuid from "uuid/v4";
 const signedHttpBridge = ({
   transport = cypherNodeHttpTransport(),
   log = _debug("sifir:tor-bridge"),
@@ -12,44 +14,36 @@ const signedHttpBridge = ({
   inboundMiddleware,
   outboundMiddleware
 }: SignedHttpBridgeParam): express => {
-  /**
-   * Starts the bridge and returns the private roomId the user needs to join
-   */
+  const { syncEmitCommand } = commandBroadcaster({ bridge });
   const startBridge = async ({ bridgeApiPort = 3010 } = {}): Promise<void> => {
     const api = express();
     api.use(bodyParser.json());
-    //api.use(
-    //  cors({
-    //    methods: ["GET", "POST", "OPTIONS"],
-    //    origin: true,
-    //    allowedHeaders: ["Content-Type", "Authorization", "token"],
-    //    credentials: true
-    //  })
-    //);
-    // TODO Sync endpoint for phone to poll ?
-
     const { get, post } = transport;
     api.all(["/:command", "/:command/*"], async (req, res, next) => {
       let reply;
-      //let method = req.method;
-      //let { command } = req.params;
-      //let param = method === "POST" ? req.body : req.params["0"];
       try {
         const { command, method, param } = await inboundMiddleware(req);
         log("got request", method, command, param);
-        switch (method) {
-          case "GET":
-            log("processing get", command);
-            reply = await get(command, param);
-            break;
-          case "POST":
-            log("processing post", command);
-            reply = await post(command, param);
-            break;
-          default:
-            console.error("Unknown command method", method);
-            return;
-        }
+        let nonce = uuid();
+        const reply = await syncEmitCommand({
+          command,
+          method,
+          param,
+          nonce
+        });
+        //switch (method) {
+        //  case "GET":
+        //    log("processing get", command);
+        //    reply = await get(command, param);
+        //    break;
+        //  case "POST":
+        //    log("processing post", command);
+        //    reply = await post(command, param);
+        //    break;
+        //  default:
+        //    console.error("Unknown command method", method);
+        //    return;
+        //}
         (await outboundMiddleware(reply, res)).status(200).json({ ...reply });
       } catch (err) {
         log("Error sending command to transport", err);

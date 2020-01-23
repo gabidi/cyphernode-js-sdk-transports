@@ -55,11 +55,11 @@ var express_1 = __importDefault(require("express"));
 var events_1 = require("events");
 var debug_1 = __importDefault(require("debug"));
 var body_parser_1 = __importDefault(require("body-parser"));
+var commandBroadcaster_1 = require("../lib/commandBroadcaster");
+var v4_1 = __importDefault(require("uuid/v4"));
 var signedHttpBridge = function (_a) {
     var _b = _a.transport, transport = _b === void 0 ? cyphernode_js_sdk_1.cypherNodeHttpTransport() : _b, _c = _a.log, log = _c === void 0 ? debug_1.default("sifir:tor-bridge") : _c, _d = _a.bridge, bridge = _d === void 0 ? new events_1.EventEmitter() : _d, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
-    /**
-     * Starts the bridge and returns the private roomId the user needs to join
-     */
+    var syncEmitCommand = commandBroadcaster_1.commandBroadcaster({ bridge: bridge }).syncEmitCommand;
     var startBridge = function (_a) {
         var _b = (_a === void 0 ? {} : _a).bridgeApiPort, bridgeApiPort = _b === void 0 ? 3010 : _b;
         return __awaiter(_this, void 0, void 0, function () {
@@ -70,48 +70,49 @@ var signedHttpBridge = function (_a) {
                 api.use(body_parser_1.default.json());
                 get = transport.get, post = transport.post;
                 api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-                    var reply, _a, command, method, param, _b, err_1;
-                    return __generator(this, function (_c) {
-                        switch (_c.label) {
+                    var reply, _a, command, method, param, nonce, reply_1, err_1;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
                             case 0:
-                                _c.trys.push([0, 9, , 11]);
+                                _b.trys.push([0, 4, , 6]);
                                 return [4 /*yield*/, inboundMiddleware(req)];
                             case 1:
-                                _a = _c.sent(), command = _a.command, method = _a.method, param = _a.param;
+                                _a = _b.sent(), command = _a.command, method = _a.method, param = _a.param;
                                 log("got request", method, command, param);
-                                _b = method;
-                                switch (_b) {
-                                    case "GET": return [3 /*break*/, 2];
-                                    case "POST": return [3 /*break*/, 4];
-                                }
-                                return [3 /*break*/, 6];
+                                nonce = v4_1.default();
+                                return [4 /*yield*/, syncEmitCommand({
+                                        command: command,
+                                        method: method,
+                                        param: param,
+                                        nonce: nonce
+                                    })];
                             case 2:
-                                log("processing get", command);
-                                return [4 /*yield*/, get(command, param)];
+                                reply_1 = _b.sent();
+                                return [4 /*yield*/, outboundMiddleware(reply_1, res)];
                             case 3:
-                                reply = _c.sent();
-                                return [3 /*break*/, 7];
+                                //switch (method) {
+                                //  case "GET":
+                                //    log("processing get", command);
+                                //    reply = await get(command, param);
+                                //    break;
+                                //  case "POST":
+                                //    log("processing post", command);
+                                //    reply = await post(command, param);
+                                //    break;
+                                //  default:
+                                //    console.error("Unknown command method", method);
+                                //    return;
+                                //}
+                                (_b.sent()).status(200).json(__assign({}, reply_1));
+                                return [3 /*break*/, 6];
                             case 4:
-                                log("processing post", command);
-                                return [4 /*yield*/, post(command, param)];
-                            case 5:
-                                reply = _c.sent();
-                                return [3 /*break*/, 7];
-                            case 6:
-                                console.error("Unknown command method", method);
-                                return [2 /*return*/];
-                            case 7: return [4 /*yield*/, outboundMiddleware(reply, res)];
-                            case 8:
-                                (_c.sent()).status(200).json(__assign({}, reply));
-                                return [3 /*break*/, 11];
-                            case 9:
-                                err_1 = _c.sent();
+                                err_1 = _b.sent();
                                 log("Error sending command to transport", err_1);
                                 return [4 /*yield*/, outboundMiddleware(err_1, res)];
-                            case 10:
-                                (_c.sent()).status(400).json({ err: err_1 });
-                                return [3 /*break*/, 11];
-                            case 11: return [2 /*return*/];
+                            case 5:
+                                (_b.sent()).status(400).json({ err: err_1 });
+                                return [3 /*break*/, 6];
+                            case 6: return [2 /*return*/];
                         }
                     });
                 }); });

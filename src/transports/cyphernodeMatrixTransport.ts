@@ -27,13 +27,6 @@ const cypherNodeMatrixTransport = async ({
     // // we know we only want to respond to messages
     if (event.getType() !== events.COMMAND_REPLY) return;
     debug(events.COMMAND_REPLY, event.getContent());
-    //if (event.getSender() !== nodeAccountUser) {
-    //  // TODO should send message to user phone in this cas
-    //  console.error("Got command reply from a different account!");
-    //  return;
-    //}
-    //const { body, msgtype } = event.getContent();
-    //const { nonce, reply } = JSON.parse(body);
     const { nonce, reply } = await inboundMiddleware({
       event,
       nodeAccountUser
