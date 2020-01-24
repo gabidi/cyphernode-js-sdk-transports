@@ -1,4 +1,4 @@
-export { cypherNodeMatrixBridge } from "./src/bridge/cypherNodeMatrixBridge";
+export { matrixBridge } from "./src/bridge/matrixBridge";
 export { signedHttpBridge } from "./src/bridge/signedHttpBridge";
 export {
   getSyncMatrixClient,

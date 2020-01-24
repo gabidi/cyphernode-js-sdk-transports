@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var cypherNodeMatrixBridge_1 = require("./src/bridge/cypherNodeMatrixBridge");
-exports.cypherNodeMatrixBridge = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge;
+var matrixBridge_1 = require("./src/bridge/matrixBridge");
+exports.matrixBridge = matrixBridge_1.matrixBridge;
 var signedHttpBridge_1 = require("./src/bridge/signedHttpBridge");
 exports.signedHttpBridge = signedHttpBridge_1.signedHttpBridge;
 var matrixUtil_1 = require("./src/lib/matrixUtil");
