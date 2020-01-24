@@ -44,7 +44,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 var ava_1 = require("ava");
 var cyphernode_js_sdk_1 = require("cyphernode-js-sdk");
-var cypherNodeMatrixBridge_1 = require("../bridge/cypherNodeMatrixBridge");
 var cyphernodeMatrixTransport_1 = require("../transports/cyphernodeMatrixTransport");
 var matrixUtil_1 = require("../lib/matrixUtil");
 var sinon_1 = __importDefault(require("sinon"));
@@ -89,7 +88,7 @@ test("Should be able to send message to devices directly", function (t) { return
                     })];
             case 1:
                 serverMatrixClient = _c.sent();
-                startBridge = cypherNodeMatrixBridge_1.cypherNodeMatrixBridge({
+                startBridge = cypherNodeMatrixBridge({
                     transport: cyphernode_js_sdk_1.cypherNodeHttpTransport(),
                     client: serverMatrixClient,
                     inboundMiddleware: bridgeInboundMiddleware,

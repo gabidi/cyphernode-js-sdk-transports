@@ -6,7 +6,7 @@ import {
   btcClient as _btcClient,
   cypherNodeHttpTransport
 } from "cyphernode-js-sdk";
-import { cypherNodeMatrixBridge } from "../bridge/cypherNodeMatrixBridge";
+import { matrixBridge } from "../bridge/matrixBridge";
 import { cypherNodeMatrixTransport } from "../transports/cyphernodeMatrixTransport";
 import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";

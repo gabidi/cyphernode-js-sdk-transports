@@ -57,11 +57,7 @@ var body_parser_1 = __importDefault(require("body-parser"));
 var commandBroadcaster_1 = require("../lib/commandBroadcaster");
 var v4_1 = __importDefault(require("uuid/v4"));
 var signedHttpBridge = function (_a) {
-    var 
-    // transport = cypherNodeHttpTransport(),
-    _b = _a.log, 
-    // transport = cypherNodeHttpTransport(),
-    log = _b === void 0 ? debug_1.default("sifir:tor-bridge") : _b, _c = _a.bridge, bridge = _c === void 0 ? new events_1.EventEmitter() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    var _b = _a.log, log = _b === void 0 ? debug_1.default("signedHttpbridge") : _b, _c = _a.bridge, bridge = _c === void 0 ? new events_1.EventEmitter() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     var syncEmitCommand = commandBroadcaster_1.commandBroadcaster({
         source: "signedHttpBridge",
         bridge: bridge
@@ -69,12 +65,11 @@ var signedHttpBridge = function (_a) {
     var startBridge = function (_a) {
         var _b = (_a === void 0 ? {} : _a).bridgeApiPort, bridgeApiPort = _b === void 0 ? 3010 : _b;
         return __awaiter(_this, void 0, void 0, function () {
-            var api, get, post;
+            var api;
             var _this = this;
             return __generator(this, function (_c) {
                 api = express_1.default();
                 api.use(body_parser_1.default.json());
-                get = transport.get, post = transport.post;
                 api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
                     var reply, _a, command, method, param, nonce, reply_1, err_1;
                     return __generator(this, function (_b) {
@@ -96,19 +91,6 @@ var signedHttpBridge = function (_a) {
                                 reply_1 = _b.sent();
                                 return [4 /*yield*/, outboundMiddleware(reply_1, res)];
                             case 3:
-                                //switch (method) {
-                                //  case "GET":
-                                //    log("processing get", command);
-                                //    reply = await get(command, param);
-                                //    break;
-                                //  case "POST":
-                                //    log("processing post", command);
-                                //    reply = await post(command, param);
-                                //    break;
-                                //  default:
-                                //    console.error("Unknown command method", method);
-                                //    return;
-                                //}
                                 (_b.sent()).status(200).json(__assign({}, reply_1));
                                 return [3 /*break*/, 6];
                             case 4:

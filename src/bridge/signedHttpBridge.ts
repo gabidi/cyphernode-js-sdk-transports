@@ -8,8 +8,7 @@ import { SignedHttpBridgeParam } from "../types/interfaces";
 import { commandBroadcaster } from "../lib/commandBroadcaster";
 import uuid from "uuid/v4";
 const signedHttpBridge = ({
-  // transport = cypherNodeHttpTransport(),
-  log = _debug("sifir:tor-bridge"),
+  log = _debug("signedHttpbridge"),
   bridge = new EventEmitter(),
   inboundMiddleware,
   outboundMiddleware
@@ -21,7 +20,6 @@ const signedHttpBridge = ({
   const startBridge = async ({ bridgeApiPort = 3010 } = {}): Promise<void> => {
     const api = express();
     api.use(bodyParser.json());
-    const { get, post } = transport;
     api.all(["/:command", "/:command/*"], async (req, res, next) => {
       let reply;
       try {
@@ -34,19 +32,6 @@ const signedHttpBridge = ({
           param,
           nonce
         });
-        //switch (method) {
-        //  case "GET":
-        //    log("processing get", command);
-        //    reply = await get(command, param);
-        //    break;
-        //  case "POST":
-        //    log("processing post", command);
-        //    reply = await post(command, param);
-        //    break;
-        //  default:
-        //    console.error("Unknown command method", method);
-        //    return;
-        //}
         (await outboundMiddleware(reply, res)).status(200).json({ ...reply });
       } catch (err) {
         log("Error sending command to transport", err);

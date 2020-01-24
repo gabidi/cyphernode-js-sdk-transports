@@ -10,6 +10,7 @@ interface MatrixBridgeMsgMiddleWare {
 interface MatrixBridgeParam extends MatrixBridgeMsgMiddleWare {
   client: MatrixClient | Promise<MatrixClient>;
   bridge: EventEmitter;
+  log: (any: any) => void;
 }
 interface TransportMsgMiddleWare {
   inboundMiddleware(req: any): Promise<{ reply: any; nonce: string }>;
