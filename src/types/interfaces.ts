@@ -10,8 +10,6 @@ interface MatrixBridgeMsgMiddleWare {
 interface MatrixBridgeParam extends MatrixBridgeMsgMiddleWare {
   client: MatrixClient | Promise<MatrixClient>;
   bridge: EventEmitter;
-  // TODO import this sdk repo
-  transport: { get: Function; post: Function };
 }
 interface TransportMsgMiddleWare {
   inboundMiddleware(req: any): Promise<{ reply: any; nonce: string }>;
@@ -37,7 +35,6 @@ type HttpOutboundResponseMiddleware = (
   req: express.Response
 ) => Promise<express.Response>;
 interface SignedHttpBridgeParam {
-  transport: { get: Function; post: Function };
   log: Function;
   bridge: EventEmitter;
   inboundMiddleware: HttpInboundMsgBridgeMiddleware;
