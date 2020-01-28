@@ -1,4 +1,3 @@
-import { cypherNodeHttpTransport } from "cyphernode-js-sdk";
 import express from "express";
 import { EventEmitter } from "events";
 import _debug from "debug";
