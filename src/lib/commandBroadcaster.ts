@@ -5,12 +5,14 @@ const commandBroadcaster = ({ source, bridge, timeoutMs = 3000 } = {}) => {
     command,
     method,
     param,
-    nonce
+    nonce,
+    ...rest
   }: {
     command: string;
     method: string;
     param: string;
     nonce: string;
+    rest?: any;
   }) => {
     const replyPromise = new Promise((res, rej) => {
       const timeout = setTimeout(
@@ -29,7 +31,8 @@ const commandBroadcaster = ({ source, bridge, timeoutMs = 3000 } = {}) => {
       command,
       method,
       param,
-      nonce
+      nonce,
+      ...rest
     });
     return replyPromise;
   };

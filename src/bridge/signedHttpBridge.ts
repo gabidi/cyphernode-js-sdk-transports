@@ -22,14 +22,17 @@ const signedHttpBridge = ({
     api.all(["/:command", "/:command/*"], async (req, res, next) => {
       let reply;
       try {
-        const { command, method, param } = await inboundMiddleware(req);
-        log("got request", method, command, param);
+        const { command, method, param, ...rest } = await inboundMiddleware(
+          req
+        );
+        log("got request", method, command, param, rest);
         let nonce = uuid();
         const reply = await syncEmitCommand({
           command,
           method,
           param,
-          nonce
+          nonce,
+          ...rest
         });
         (await outboundMiddleware(reply, res)).status(200).json({ ...reply });
       } catch (err) {

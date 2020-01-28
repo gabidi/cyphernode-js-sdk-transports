@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -33,6 +44,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
+};
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -75,7 +97,7 @@ var matrixBridge = function (_a) {
                     case 3:
                         _client = _b;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var reply, content, method, command, _a, param, nonce, payload, body_1, err_1;
+                            var reply, content, method, command, _a, param, nonce, rest, payload, body_1, err_1;
                             return __generator(this, function (_b) {
                                 switch (_b.label) {
                                     case 0:
@@ -92,16 +114,14 @@ var matrixBridge = function (_a) {
                                             })];
                                     case 2:
                                         content = _b.sent();
-                                        method = content.method, command = content.command, _a = content.param, param = _a === void 0 ? null : _a, nonce = content.nonce;
+                                        method = content.method, command = content.command, _a = content.param, param = _a === void 0 ? null : _a, nonce = content.nonce, rest = __rest(content, ["method", "command", "param", "nonce"]);
                                         if (!method.length || !command.length || !nonce.length)
                                             throw "Invalid event content parsed";
                                         log("got command!", method, command);
-                                        return [4 /*yield*/, syncEmitCommand({
-                                                method: method,
+                                        return [4 /*yield*/, syncEmitCommand(__assign({ method: method,
                                                 command: command,
                                                 param: param,
-                                                nonce: nonce
-                                            })];
+                                                nonce: nonce }, rest))];
                                     case 3:
                                         payload = _b.sent();
                                         body_1 = JSON.stringify({ reply: payload, nonce: nonce });

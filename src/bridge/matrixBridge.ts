@@ -45,7 +45,7 @@ const matrixBridge = ({
           event,
           accountsPairedDeviceList
         });
-        const { method, command, param = null, nonce } = content;
+        const { method, command, param = null, nonce, ...rest } = content;
         if (!method.length || !command.length || !nonce.length)
           throw "Invalid event content parsed";
         log("got command!", method, command);
@@ -53,7 +53,8 @@ const matrixBridge = ({
           method,
           command,
           param,
-          nonce
+          nonce,
+          ...rest
         });
         let body = JSON.stringify({ reply: payload, nonce });
         body = await outboundMiddleware(body);
