@@ -1,5 +1,3 @@
-export { matrixBridge } from "./src/bridge/matrixBridge";
-export { signedHttpBridge } from "./src/bridge/signedHttpBridge";
 export {
   getSyncMatrixClient,
   MatrixClient,

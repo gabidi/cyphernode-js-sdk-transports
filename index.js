@@ -1,9 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var matrixBridge_1 = require("./src/bridge/matrixBridge");
-exports.matrixBridge = matrixBridge_1.matrixBridge;
-var signedHttpBridge_1 = require("./src/bridge/signedHttpBridge");
-exports.signedHttpBridge = signedHttpBridge_1.signedHttpBridge;
 var matrixUtil_1 = require("./src/lib/matrixUtil");
 exports.getSyncMatrixClient = matrixUtil_1.getSyncMatrixClient;
 exports.MatrixClient = matrixUtil_1.MatrixClient;
