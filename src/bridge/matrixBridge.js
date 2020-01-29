@@ -95,7 +95,7 @@ var matrixBridge = function (_a) {
                     case 3:
                         _client = _b;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var reply, content, method, command, _a, param, nonce, rest, payload, bodyToProcess, _b, deviceId, eventSender, body, err_1;
+                            var reply, content, method, command, _a, param, nonce, rest, payload, bodyToProcess, _b, deviceId, eventSender, body_1, err_1;
                             var _c;
                             return __generator(this, function (_d) {
                                 switch (_d.label) {
@@ -126,15 +126,27 @@ var matrixBridge = function (_a) {
                                         bodyToProcess = JSON.stringify({ reply: payload, nonce: nonce });
                                         return [4 /*yield*/, outboundMiddleware(bodyToProcess)];
                                     case 4:
-                                        _b = _d.sent(), deviceId = _b.deviceId, eventSender = _b.eventSender, body = __rest(_b, ["deviceId", "eventSender"]);
+                                        _b = _d.sent(), deviceId = _b.deviceId, eventSender = _b.eventSender, body_1 = _b.body;
                                         if (deviceId && eventSender) {
                                             reply = (_c = {},
                                                 _c[eventSender] = {
                                                     deviceId: {
-                                                        body: body
+                                                        body: body_1
                                                     }
                                                 },
                                                 _c);
+                                        }
+                                        // If middleware does not return the deviceId and Sender, then fallback to provided list
+                                        else {
+                                            reply = Object.entries(accountsPairedDeviceList).reduce(function (dict, _a) {
+                                                var account = _a[0], devices = _a[1];
+                                                log("preparing reply to", account, devices);
+                                                dict[account] = {};
+                                                devices.forEach(function (device) {
+                                                    dict[account][device] = { body: body_1 };
+                                                });
+                                                return dict;
+                                            }, {});
                                         }
                                         return [3 /*break*/, 6];
                                     case 5:

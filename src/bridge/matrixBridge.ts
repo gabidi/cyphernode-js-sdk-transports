@@ -55,7 +55,7 @@ const matrixBridge = ({
           ...rest
         });
         let bodyToProcess = JSON.stringify({ reply: payload, nonce });
-        const { deviceId, eventSender, ...body } = await outboundMiddleware(
+        const { deviceId, eventSender, body } = await outboundMiddleware(
           bodyToProcess
         );
         if (deviceId && eventSender) {
@@ -67,20 +67,20 @@ const matrixBridge = ({
             }
           };
         }
-        // @TODO deprecate this
-        //else {
-        //  reply = Object.entries(accountsPairedDeviceList).reduce(
-        //    (dict, [account, devices]) => {
-        //      log("preparing reply to", account, devices);
-        //      dict[account] = {};
-        //      devices.forEach(device => {
-        //        dict[account][device] = { body };
-        //      });
-        //      return dict;
-        //    },
-        //    <object>{}
-        //  );
-        //}
+        // If middleware does not return the deviceId and Sender, then fallback to provided list
+        else {
+          reply = Object.entries(accountsPairedDeviceList).reduce(
+            (dict, [account, devices]) => {
+              log("preparing reply to", account, devices);
+              dict[account] = {};
+              devices.forEach(device => {
+                dict[account][device] = { body };
+              });
+              return dict;
+            },
+            <object>{}
+          );
+        }
       } catch (err) {
         log("Error sending command to transport", err);
         reply = { err };
