@@ -108,33 +108,31 @@ var cypherNodeMatrixTransport = function (_a) {
                             }
                         });
                     }); });
-                    _commandQueue = async_1.queue(function (_a, cb) {
-                        var method = _a.method, command = _a.command, param = _a.param, nonce = _a.nonce;
-                        return __awaiter(_this, void 0, void 0, function () {
-                            var body, payload;
-                            var _b, _c;
-                            return __generator(this, function (_d) {
-                                switch (_d.label) {
-                                    case 0: return [4 /*yield*/, outboundMiddleware(JSON.stringify({ method: method, command: command, param: param, nonce: nonce }))];
-                                    case 1:
-                                        body = _d.sent();
-                                        payload = (_b = {},
-                                            _b[nodeAccountUser] = (_c = {},
-                                                _c[nodeDeviceId] = {
-                                                    body: body
-                                                },
-                                                _c),
-                                            _b);
-                                        debug("Transport::Command queue sending", method, command, nonce, payload);
-                                        return [4 /*yield*/, matrixClient.sendToDevice(constants_1.events.COMMAND_REQUEST, payload)];
-                                    case 2:
-                                        _d.sent();
-                                        cb();
-                                        return [2 /*return*/];
-                                }
-                            });
+                    _commandQueue = async_1.queue(function (_a, cb) { return __awaiter(_this, void 0, void 0, function () {
+                        var body, payload;
+                        var _b, _c;
+                        var method = _a.method, command = _a.command, param = _a.param, nonce = _a.nonce, rest = __rest(_a, ["method", "command", "param", "nonce"]);
+                        return __generator(this, function (_d) {
+                            switch (_d.label) {
+                                case 0: return [4 /*yield*/, outboundMiddleware(JSON.stringify(__assign({ method: method, command: command, param: param, nonce: nonce }, rest)))];
+                                case 1:
+                                    body = _d.sent();
+                                    payload = (_b = {},
+                                        _b[nodeAccountUser] = (_c = {},
+                                            _c[nodeDeviceId] = {
+                                                body: body
+                                            },
+                                            _c),
+                                        _b);
+                                    debug("Transport::Command queue sending", method, command, nonce, payload);
+                                    return [4 /*yield*/, matrixClient.sendToDevice(constants_1.events.COMMAND_REQUEST, payload)];
+                                case 2:
+                                    _d.sent();
+                                    cb();
+                                    return [2 /*return*/];
+                            }
                         });
-                    }, maxMsgConcurrency);
+                    }); }, maxMsgConcurrency);
                     _sendCommand = function (_a) {
                         var method = _a.method, command = _a.command, payload = _a.payload;
                         var nonce = v4_1.default();

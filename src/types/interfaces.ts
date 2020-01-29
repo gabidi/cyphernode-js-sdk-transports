@@ -1,11 +1,14 @@
 import { MatrixClient } from "matrix-js-sdk";
 import { EventEmitter } from "events";
+import { MatrixEvent } from "matrix-js-sdk";
 import express from "express";
 interface MatrixBridgeMsgMiddleWare {
   inboundMiddleware(
     req: any
   ): Promise<{ method: string; command: string; param: any; nonce: string }>;
-  outboundMiddleware(msg: string): Promise<string>;
+  outboundMiddleware(
+    msg: string
+  ): Promise<{ deviceId?: string; eventSender?: string; body: any }>;
 }
 interface MatrixBridgeParam extends MatrixBridgeMsgMiddleWare {
   client: MatrixClient | Promise<MatrixClient>;
@@ -13,8 +16,11 @@ interface MatrixBridgeParam extends MatrixBridgeMsgMiddleWare {
   log: (any: any) => void;
 }
 interface TransportMsgMiddleWare {
-  inboundMiddleware(req: any): Promise<{ reply: any; nonce: string }>;
-  outboundMiddleware(msg: string): Promise<string>;
+  inboundMiddleware(param: {
+    event: MatrixEvent;
+    nodeAccountUser: string;
+  }): Promise<{ reply: any; nonce: string }>;
+  outboundMiddleware(msg: string): Promise<object>;
 }
 interface MatrixTransportParam extends TransportMsgMiddleWare {
   nodeDeviceId: string;
