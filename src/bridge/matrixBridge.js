@@ -96,23 +96,23 @@ var matrixBridge = function (_a) {
                         _client = _b;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
                             var reply, content, method, command, _a, param, nonce, rest, payload, bodyToProcess, _b, deviceId, eventSender, body_1, err_1;
-                            var _c;
-                            return __generator(this, function (_d) {
-                                switch (_d.label) {
+                            var _c, _d;
+                            return __generator(this, function (_e) {
+                                switch (_e.label) {
                                     case 0:
                                         log("got event", event.getType(), event.getSender());
                                         if (event.getType() !== constants_1.events.COMMAND_REQUEST) {
                                             return [2 /*return*/];
                                         }
-                                        _d.label = 1;
+                                        _e.label = 1;
                                     case 1:
-                                        _d.trys.push([1, 5, , 6]);
+                                        _e.trys.push([1, 5, , 6]);
                                         return [4 /*yield*/, inboundMiddleware({
                                                 event: event,
                                                 accountsPairedDeviceList: accountsPairedDeviceList
                                             })];
                                     case 2:
-                                        content = _d.sent();
+                                        content = _e.sent();
                                         method = content.method, command = content.command, _a = content.param, param = _a === void 0 ? null : _a, nonce = content.nonce, rest = __rest(content, ["method", "command", "param", "nonce"]);
                                         if (!method.length || !command.length || !nonce.length)
                                             throw "Invalid event content parsed";
@@ -122,18 +122,18 @@ var matrixBridge = function (_a) {
                                                 param: param,
                                                 nonce: nonce }, rest))];
                                     case 3:
-                                        payload = _d.sent();
+                                        payload = _e.sent();
                                         bodyToProcess = JSON.stringify({ reply: payload, nonce: nonce });
                                         return [4 /*yield*/, outboundMiddleware(bodyToProcess)];
                                     case 4:
-                                        _b = _d.sent(), deviceId = _b.deviceId, eventSender = _b.eventSender, body_1 = _b.body;
+                                        _b = _e.sent(), deviceId = _b.deviceId, eventSender = _b.eventSender, body_1 = _b.body;
                                         if (deviceId && eventSender) {
                                             reply = (_c = {},
-                                                _c[eventSender] = {
-                                                    deviceId: {
+                                                _c[eventSender] = (_d = {},
+                                                    _d[deviceId] = {
                                                         body: body_1
-                                                    }
-                                                },
+                                                    },
+                                                    _d),
                                                 _c);
                                         }
                                         // If middleware does not return the deviceId and Sender, then fallback to provided list
@@ -150,7 +150,7 @@ var matrixBridge = function (_a) {
                                         }
                                         return [3 /*break*/, 6];
                                     case 5:
-                                        err_1 = _d.sent();
+                                        err_1 = _e.sent();
                                         log("Error sending command to transport", err_1);
                                         reply = { err: err_1 };
                                         return [3 /*break*/, 6];
@@ -158,7 +158,7 @@ var matrixBridge = function (_a) {
                                         log("Bridge sending command reply", reply);
                                         return [4 /*yield*/, _client.sendToDevice(constants_1.events.COMMAND_REPLY, reply)];
                                     case 7:
-                                        _d.sent();
+                                        _e.sent();
                                         log("finished processing command");
                                         return [2 /*return*/];
                                 }
