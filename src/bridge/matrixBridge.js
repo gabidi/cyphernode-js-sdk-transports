@@ -76,16 +76,14 @@ var matrixBridge = function (_a) {
         bridge: bridge
     }).syncEmitCommand;
     var startBridge = function (_a) {
-        var accountsPairedDeviceList = _a.accountsPairedDeviceList;
+        var accountsPairedDeviceList = (_a === void 0 ? {} : _a).accountsPairedDeviceList;
         return __awaiter(_this, void 0, void 0, function () {
             var _client, _b;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        if (!accountsPairedDeviceList)
-                            throw "cannot start birding wihtout list of paired devices";
-                        log("starting bridge", accountsPairedDeviceList);
+                        log("starting bridge with device account list", accountsPairedDeviceList);
                         if (!client.then) return [3 /*break*/, 2];
                         return [4 /*yield*/, client];
                     case 1:
@@ -97,23 +95,24 @@ var matrixBridge = function (_a) {
                     case 3:
                         _client = _b;
                         _client.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
-                            var reply, content, method, command, _a, param, nonce, rest, payload, body_1, err_1;
-                            return __generator(this, function (_b) {
-                                switch (_b.label) {
+                            var reply, content, method, command, _a, param, nonce, rest, payload, bodyToProcess, _b, deviceId, eventSender, body, err_1;
+                            var _c;
+                            return __generator(this, function (_d) {
+                                switch (_d.label) {
                                     case 0:
                                         log("got event", event.getType(), event.getSender());
                                         if (event.getType() !== constants_1.events.COMMAND_REQUEST) {
                                             return [2 /*return*/];
                                         }
-                                        _b.label = 1;
+                                        _d.label = 1;
                                     case 1:
-                                        _b.trys.push([1, 5, , 6]);
+                                        _d.trys.push([1, 5, , 6]);
                                         return [4 /*yield*/, inboundMiddleware({
                                                 event: event,
                                                 accountsPairedDeviceList: accountsPairedDeviceList
                                             })];
                                     case 2:
-                                        content = _b.sent();
+                                        content = _d.sent();
                                         method = content.method, command = content.command, _a = content.param, param = _a === void 0 ? null : _a, nonce = content.nonce, rest = __rest(content, ["method", "command", "param", "nonce"]);
                                         if (!method.length || !command.length || !nonce.length)
                                             throw "Invalid event content parsed";
@@ -123,23 +122,23 @@ var matrixBridge = function (_a) {
                                                 param: param,
                                                 nonce: nonce }, rest))];
                                     case 3:
-                                        payload = _b.sent();
-                                        body_1 = JSON.stringify({ reply: payload, nonce: nonce });
-                                        return [4 /*yield*/, outboundMiddleware(body_1)];
+                                        payload = _d.sent();
+                                        bodyToProcess = JSON.stringify({ reply: payload, nonce: nonce });
+                                        return [4 /*yield*/, outboundMiddleware(bodyToProcess)];
                                     case 4:
-                                        body_1 = _b.sent();
-                                        reply = Object.entries(accountsPairedDeviceList).reduce(function (dict, _a) {
-                                            var account = _a[0], devices = _a[1];
-                                            log("preparing reply to", account, devices);
-                                            dict[account] = {};
-                                            devices.forEach(function (device) {
-                                                dict[account][device] = { body: body_1 };
-                                            });
-                                            return dict;
-                                        }, {});
+                                        _b = _d.sent(), deviceId = _b.deviceId, eventSender = _b.eventSender, body = __rest(_b, ["deviceId", "eventSender"]);
+                                        if (deviceId && eventSender) {
+                                            reply = (_c = {},
+                                                _c[eventSender] = {
+                                                    deviceId: {
+                                                        body: body
+                                                    }
+                                                },
+                                                _c);
+                                        }
                                         return [3 /*break*/, 6];
                                     case 5:
-                                        err_1 = _b.sent();
+                                        err_1 = _d.sent();
                                         log("Error sending command to transport", err_1);
                                         reply = { err: err_1 };
                                         return [3 /*break*/, 6];
@@ -147,7 +146,7 @@ var matrixBridge = function (_a) {
                                         log("Bridge sending command reply", reply);
                                         return [4 /*yield*/, _client.sendToDevice(constants_1.events.COMMAND_REPLY, reply)];
                                     case 7:
-                                        _b.sent();
+                                        _d.sent();
                                         log("finished processing command");
                                         return [2 /*return*/];
                                 }

@@ -30,8 +30,6 @@ const matrixBridge = ({
   }: {
     accountsPairedDeviceList?: AccountDevicesDict;
   } = {}) => {
-    if (!accountsPairedDeviceList)
-      throw "cannot start birding wihtout list of paired devices";
     log("starting bridge with device account list", accountsPairedDeviceList);
     const _client = client.then ? await client : client;
     _client.on("toDeviceEvent", async event => {
