@@ -61,7 +61,7 @@ const matrixBridge = ({
         if (deviceId && eventSender) {
           reply = {
             [eventSender]: {
-              deviceId: {
+              [deviceId]: {
                 body
               }
             }
