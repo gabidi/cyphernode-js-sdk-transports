@@ -5,7 +5,9 @@ interface MatrixBridgeMsgMiddleWare {
   inboundMiddleware(
     req: any
   ): Promise<{ method: string; command: string; param: any; nonce: string }>;
-  outboundMiddleware(msg: string): Promise<string>;
+  outboundMiddleware(
+    msg: string
+  ): Promise<{ deviceId?: string; eventSender?: string; body: any }>;
 }
 interface MatrixBridgeParam extends MatrixBridgeMsgMiddleWare {
   client: MatrixClient | Promise<MatrixClient>;
@@ -14,7 +16,7 @@ interface MatrixBridgeParam extends MatrixBridgeMsgMiddleWare {
 }
 interface TransportMsgMiddleWare {
   inboundMiddleware(req: any): Promise<{ reply: any; nonce: string }>;
-  outboundMiddleware(msg: string): Promise<string>;
+  outboundMiddleware(msg: string): Promise<object>;
 }
 interface MatrixTransportParam extends TransportMsgMiddleWare {
   nodeDeviceId: string;

@@ -28,11 +28,11 @@ const matrixBridge = ({
   const startBridge = async ({
     accountsPairedDeviceList
   }: {
-    accountsPairedDeviceList: AccountDevicesDict;
-  }) => {
+    accountsPairedDeviceList?: AccountDevicesDict;
+  } = {}) => {
     if (!accountsPairedDeviceList)
       throw "cannot start birding wihtout list of paired devices";
-    log("starting bridge", accountsPairedDeviceList);
+    log("starting bridge with device account list", accountsPairedDeviceList);
     const _client = client.then ? await client : client;
     _client.on("toDeviceEvent", async event => {
       log("got event", event.getType(), event.getSender());
@@ -56,19 +56,33 @@ const matrixBridge = ({
           nonce,
           ...rest
         });
-        let body = JSON.stringify({ reply: payload, nonce });
-        body = await outboundMiddleware(body);
-        reply = Object.entries(accountsPairedDeviceList).reduce(
-          (dict, [account, devices]) => {
-            log("preparing reply to", account, devices);
-            dict[account] = {};
-            devices.forEach(device => {
-              dict[account][device] = { body };
-            });
-            return dict;
-          },
-          <object>{}
+        let bodyToProcess = JSON.stringify({ reply: payload, nonce });
+        const { deviceId, eventSender, ...body } = await outboundMiddleware(
+          bodyToProcess
         );
+        if (deviceId && eventSender) {
+          reply = {
+            [eventSender]: {
+              deviceId: {
+                body
+              }
+            }
+          };
+        }
+        // @TODO deprecate this
+        //else {
+        //  reply = Object.entries(accountsPairedDeviceList).reduce(
+        //    (dict, [account, devices]) => {
+        //      log("preparing reply to", account, devices);
+        //      dict[account] = {};
+        //      devices.forEach(device => {
+        //        dict[account][device] = { body };
+        //      });
+        //      return dict;
+        //    },
+        //    <object>{}
+        //  );
+        //}
       } catch (err) {
         log("Error sending command to transport", err);
         reply = { err };
