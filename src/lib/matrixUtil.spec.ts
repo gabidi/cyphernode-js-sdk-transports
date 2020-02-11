@@ -10,10 +10,10 @@ import * as axios from "axios";
 const test = serial as TestInterface<any>;
 test("Should be able to instantiate a matrix client with axios as it's request handler", async t => {
   const client = await getSyncMatrixClient({
-    baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
-    password: process.env.CYPHERNODE_MATRIX_PASS,
-    user: process.env.CYPHERNODE_MATRIX_USER,
-    request: async (options, cb) => {
+    baseUrl: process.env.SIFIR_MATRIX_SERVER,
+    password: process.env.SIFIR_MATRIX_PASS,
+    user: process.env.SIFIR_MATRIX_USER,
+    request: async (options: any, cb: Function) => {
       const opts = {
         ...options,
         url: options.uri,
