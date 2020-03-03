@@ -7,7 +7,7 @@ import { SignedHttpBridgeParam } from "../types/interfaces";
 import { commandBroadcaster } from "../lib/commandBroadcaster";
 import uuid from "uuid/v4";
 const signedHttpBridge = ({
-  log = _debug("signedHttpbridge"),
+  log = _debug("sifir:signedHttpbridge"),
   bridge = new EventEmitter(),
   inboundMiddleware,
   outboundMiddleware

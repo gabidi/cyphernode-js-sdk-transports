@@ -72,7 +72,7 @@ var matrix_js_sdk_1 = __importStar(require("matrix-js-sdk"));
 exports.MatrixClient = matrix_js_sdk_1.MatrixClient;
 exports.MatrixEvent = matrix_js_sdk_1.MatrixEvent;
 var debug_1 = __importDefault(require("debug"));
-var debug = debug_1.default("matrixutil:");
+var debug = debug_1.default("sifir:matrixutil:");
 var getSyncMatrixClient = function (_a) {
     if (_a === void 0) { _a = {}; }
     return __awaiter(_this, void 0, void 0, function () {

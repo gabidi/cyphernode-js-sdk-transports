@@ -12,7 +12,7 @@ import { commandBroadcaster } from "../lib/commandBroadcaster";
 const matrixBridge = ({
   client = getSyncMatrixClient(),
   bridge = new EventEmitter(),
-  log = _debug("matrixbridge"),
+  log = _debug("sifir:matrixbridge"),
   inboundMiddleware,
   outboundMiddleware
 }: MatrixBridgeParam): {

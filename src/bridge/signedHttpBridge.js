@@ -68,7 +68,7 @@ var body_parser_1 = __importDefault(require("body-parser"));
 var commandBroadcaster_1 = require("../lib/commandBroadcaster");
 var v4_1 = __importDefault(require("uuid/v4"));
 var signedHttpBridge = function (_a) {
-    var _b = _a.log, log = _b === void 0 ? debug_1.default("signedHttpbridge") : _b, _c = _a.bridge, bridge = _c === void 0 ? new events_1.EventEmitter() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    var _b = _a.log, log = _b === void 0 ? debug_1.default("sifir:signedHttpbridge") : _b, _c = _a.bridge, bridge = _c === void 0 ? new events_1.EventEmitter() : _c, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     var syncEmitCommand = commandBroadcaster_1.commandBroadcaster({
         source: "signedHttpBridge",
         bridge: bridge

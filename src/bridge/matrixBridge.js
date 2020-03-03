@@ -67,7 +67,7 @@ var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
 var commandBroadcaster_1 = require("../lib/commandBroadcaster");
 var matrixBridge = function (_a) {
-    var _b = _a.client, client = _b === void 0 ? matrixUtil_1.getSyncMatrixClient() : _b, _c = _a.bridge, bridge = _c === void 0 ? new events_1.EventEmitter() : _c, _d = _a.log, log = _d === void 0 ? debug_1.default("matrixbridge") : _d, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    var _b = _a.client, client = _b === void 0 ? matrixUtil_1.getSyncMatrixClient() : _b, _c = _a.bridge, bridge = _c === void 0 ? new events_1.EventEmitter() : _c, _d = _a.log, log = _d === void 0 ? debug_1.default("sifir:matrixbridge") : _d, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     if (!inboundMiddleware || !outboundMiddleware) {
         throw "Throw must supply outbound and inbound message processing";
     }

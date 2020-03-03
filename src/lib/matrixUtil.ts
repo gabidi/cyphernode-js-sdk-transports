@@ -1,6 +1,6 @@
 import matrix, { MatrixClient, MatrixEvent } from "matrix-js-sdk";
 import _debug from "debug";
-const debug = _debug("matrixutil:");
+const debug = _debug("sifir:matrixutil:");
 const getSyncMatrixClient = async ({
   user = process.env.SIFIR_MATRIX_USER,
   password = process.env.SIFIR_MATRIX_PASS,
