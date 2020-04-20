@@ -11,10 +11,11 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -52,7 +53,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Simple test that shows the constructions of a Matrix-js-sdk client
@@ -64,21 +64,20 @@ var ava_1 = require("ava");
 var matrixUtil_1 = require("../lib/matrixUtil");
 var axios = __importStar(require("axios"));
 var test = ava_1.serial;
-test("Should be able to instantiate a matrix client with axios as it's request handler", function (t) { return __awaiter(_this, void 0, void 0, function () {
+test("Should be able to instantiate a matrix client with axios as it's request handler", function (t) { return __awaiter(void 0, void 0, void 0, function () {
     var client, devices;
-    var _this = this;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, matrixUtil_1.getSyncMatrixClient({
                     baseUrl: process.env.CYPHERNODE_MATRIX_SERVER,
                     password: process.env.CYPHERNODE_MATRIX_PASS,
                     user: process.env.CYPHERNODE_MATRIX_USER,
-                    request: function (options, cb) { return __awaiter(_this, void 0, void 0, function () {
+                    request: function (options, cb) { return __awaiter(void 0, void 0, void 0, function () {
                         var opts, resp, err_1;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    opts = __assign({}, options, { url: options.uri, data: options.body, params: options.qs });
+                                    opts = __assign(__assign({}, options), { url: options.uri, data: options.body, params: options.qs });
                                     _a.label = 1;
                                 case 1:
                                     _a.trys.push([1, 3, , 4]);

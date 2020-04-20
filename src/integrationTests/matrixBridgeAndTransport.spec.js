@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -37,7 +38,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * FIXME THIS DOESNT WORK WITH NEW INFRA RE_WRTE
@@ -48,7 +48,7 @@ var cyphernodeMatrixTransport_1 = require("../transports/cyphernodeMatrixTranspo
 var matrixUtil_1 = require("../lib/matrixUtil");
 var sinon_1 = __importDefault(require("sinon"));
 var test = ava_1.serial; //FIXME this bullshit, interface for Matrix
-test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
+test.before(function (t) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         t.context = {
             getSyncMatrixClient: matrixUtil_1.getSyncMatrixClient,
@@ -62,7 +62,7 @@ test.before(function (t) { return __awaiter(_this, void 0, void 0, function () {
         return [2 /*return*/];
     });
 }); });
-test("Should be able to send message to devices directly", function (t) { return __awaiter(_this, void 0, void 0, function () {
+test("Should be able to send message to devices directly", function (t) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, baseUrl, getSyncMatrixClient, apiKey, user, password, nodeDeviceId, clientId, bridgeInboundMiddleware, bridgeOutboundMiddleware, serverMatrixClient, startBridge, transportInboundmiddleware, transportOutboundmiddleware, transportMatrixClient, transport, btcClient, hash;
     var _b;
     return __generator(this, function (_c) {

@@ -11,10 +11,11 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -59,7 +60,6 @@ var __rest = (this && this.__rest) || function (s, e) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var events_1 = require("events");
@@ -75,14 +75,13 @@ var signedHttpBridge = function (_a) {
     }).syncEmitCommand;
     var startBridge = function (_a) {
         var _b = (_a === void 0 ? {} : _a).bridgeApiPort, bridgeApiPort = _b === void 0 ? 3010 : _b;
-        return __awaiter(_this, void 0, void 0, function () {
+        return __awaiter(void 0, void 0, void 0, function () {
             var api;
-            var _this = this;
             return __generator(this, function (_c) {
                 api = express_1.default();
                 api.use(body_parser_1.default.json());
-                api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-                    var reply, _a, command, method, param, rest, nonce, reply_1, err_1;
+                api.all(["/:command", "/:command/*"], function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+                    var reply, _a, command, method, param, rest, nonce, reply_1, err_1, errorToSend;
                     return __generator(this, function (_b) {
                         switch (_b.label) {
                             case 0:
@@ -105,9 +104,10 @@ var signedHttpBridge = function (_a) {
                             case 4:
                                 err_1 = _b.sent();
                                 log("Error sending command to transport", err_1);
-                                return [4 /*yield*/, outboundMiddleware(err_1, res)];
+                                errorToSend = JSON.stringify(err_1);
+                                return [4 /*yield*/, outboundMiddleware(errorToSend, res)];
                             case 5:
-                                (_b.sent()).status(400).json({ err: err_1 });
+                                (_b.sent()).status(400).json(errorToSend);
                                 return [3 /*break*/, 6];
                             case 6: return [2 /*return*/];
                         }

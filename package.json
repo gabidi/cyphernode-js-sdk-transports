@@ -19,7 +19,8 @@
     "ava": "^2.4.0",
     "axios": "^0.19.0",
     "dotenv": "^8.2.0",
-    "sinon": "^8.1.0"
+    "sinon": "^8.1.0",
+    "typescript": "^3.8.3"
   },
   "scripts": {
     "test:integration": "node -r dotenv/config ./node_modules/ava/cli.js ./src/integrationTests/*.spec.js"
