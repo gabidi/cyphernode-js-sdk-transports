@@ -1,4 +1,8 @@
-const commandBroadcaster = ({ source, bridge, timeoutMs = 3000 } = {}) => {
+const commandBroadcaster = ({
+  source,
+  bridge,
+  timeoutMs = process.env.BRIDGE_COMMAND_BROADCAST_TIMEOUT || 3000
+} = {}) => {
   if (!bridge) "Must init commandBroadcaster with event emitter as bridge";
   if (!source) "Must init commandBroadcaster with source";
   const syncEmitCommand = ({

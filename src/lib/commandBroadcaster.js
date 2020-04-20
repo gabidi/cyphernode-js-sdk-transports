@@ -23,7 +23,7 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var commandBroadcaster = function (_a) {
-    var _b = _a === void 0 ? {} : _a, source = _b.source, bridge = _b.bridge, _c = _b.timeoutMs, timeoutMs = _c === void 0 ? 3000 : _c;
+    var _b = _a === void 0 ? {} : _a, source = _b.source, bridge = _b.bridge, _c = _b.timeoutMs, timeoutMs = _c === void 0 ? process.env.BRIDGE_COMMAND_BROADCAST_TIMEOUT || 3000 : _c;
     if (!bridge)
         "Must init commandBroadcaster with event emitter as bridge";
     if (!source)
