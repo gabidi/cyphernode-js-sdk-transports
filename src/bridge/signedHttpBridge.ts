@@ -37,7 +37,8 @@ const signedHttpBridge = ({
         (await outboundMiddleware(reply, res)).status(200).json({ ...reply });
       } catch (err) {
         log("Error sending command to transport", err);
-        (await outboundMiddleware(err, res)).status(400).json({ err });
+        const errorToSend = JSON.stringify(err);
+        (await outboundMiddleware(errorToSend, res)).status(400).json(errorToSend);
       }
     });
     api.listen(bridgeApiPort);
