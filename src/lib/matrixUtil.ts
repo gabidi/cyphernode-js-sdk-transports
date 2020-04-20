@@ -13,6 +13,7 @@ const getSyncMatrixClient = async ({
     baseUrl,
     initialSyncLimit: 100,
     timelineSupport: true,
+    deviceId,
     ...opts
   });
   await matrixClient.login("m.login.password", {
