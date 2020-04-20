@@ -20,7 +20,8 @@ const commandBroadcaster = ({
   }) => {
     const replyPromise = new Promise((res, rej) => {
       const timeout = setTimeout(
-        () => rej(`${command}/${method} with ${nonce} timedout!`),
+        () =>
+          rej(`${command}/${method} with ${nonce} timedout after ${timeoutMs}`),
         timeoutMs
       );
       bridge.once(nonce, (payload: any) => {

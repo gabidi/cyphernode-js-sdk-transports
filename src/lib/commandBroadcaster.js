@@ -31,7 +31,9 @@ var commandBroadcaster = function (_a) {
     var syncEmitCommand = function (_a) {
         var command = _a.command, method = _a.method, param = _a.param, nonce = _a.nonce, rest = __rest(_a, ["command", "method", "param", "nonce"]);
         var replyPromise = new Promise(function (res, rej) {
-            var timeout = setTimeout(function () { return rej(command + "/" + method + " with " + nonce + " timedout!"); }, timeoutMs);
+            var timeout = setTimeout(function () {
+                return rej(command + "/" + method + " with " + nonce + " timedout after " + timeoutMs);
+            }, timeoutMs);
             bridge.once(nonce, function (payload) {
                 clearTimeout(timeout);
                 var err = payload.err;
