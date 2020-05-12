@@ -11,10 +11,11 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -66,7 +67,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var matrix_js_sdk_1 = __importStar(require("matrix-js-sdk"));
 exports.MatrixClient = matrix_js_sdk_1.MatrixClient;
@@ -75,23 +75,21 @@ var debug_1 = __importDefault(require("debug"));
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
     if (_a === void 0) { _a = {}; }
-    return __awaiter(_this, void 0, void 0, function () {
+    return __awaiter(void 0, void 0, void 0, function () {
         var matrixClient, syncFailCount;
-        var _b = _a.user, user = _b === void 0 ? process.env.SIFIR_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.SIFIR_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.SIFIR_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId"]);
-        return __generator(this, function (_f) {
-            switch (_f.label) {
+        var _b = _a.user, user = _b === void 0 ? process.env.SIFIR_MATRIX_USER : _b, _c = _a.password, password = _c === void 0 ? process.env.SIFIR_MATRIX_PASS : _c, _d = _a.baseUrl, baseUrl = _d === void 0 ? process.env.SIFIR_MATRIX_SERVER : _d, _e = _a.deviceId, deviceId = _e === void 0 ? undefined : _e, _f = _a.loginType, loginType = _f === void 0 ? "m.login.password" : _f, _g = _a.loginOpts, loginOpts = _g === void 0 ? {} : _g, opts = __rest(_a, ["user", "password", "baseUrl", "deviceId", "loginType", "loginOpts"]);
+        return __generator(this, function (_h) {
+            switch (_h.label) {
                 case 0:
                     debug("Conneting to", baseUrl, user);
-                    return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true }, opts))];
+                    return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true, deviceId: deviceId }, opts))];
                 case 1:
-                    matrixClient = _f.sent();
-                    return [4 /*yield*/, matrixClient.login("m.login.password", {
-                            user: user,
-                            password: password,
-                            device_id: deviceId
-                        })];
+                    matrixClient = _h.sent();
+                    debug("logion in with", loginType, loginOpts);
+                    return [4 /*yield*/, matrixClient.login(loginType, __assign({ user: user,
+                            password: password, device_id: deviceId }, loginOpts))];
                 case 2:
-                    _f.sent();
+                    _h.sent();
                     matrixClient.startClient();
                     syncFailCount = 0;
                     return [2 /*return*/, new Promise(function (res, rej) {

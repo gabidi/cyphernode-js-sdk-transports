@@ -6,6 +6,8 @@ const getSyncMatrixClient = async ({
   password = process.env.SIFIR_MATRIX_PASS,
   baseUrl = process.env.SIFIR_MATRIX_SERVER,
   deviceId = undefined,
+  loginType = "m.login.password",
+  loginOpts = {},
   ...opts
 } = {}): Promise<MatrixClient> => {
   debug("Conneting to", baseUrl, user);
@@ -16,10 +18,12 @@ const getSyncMatrixClient = async ({
     deviceId,
     ...opts
   });
-  await matrixClient.login("m.login.password", {
+  debug("logion in with", loginType, loginOpts);
+  await matrixClient.login(loginType, {
     user,
     password,
-    device_id: deviceId
+    device_id: deviceId,
+    ...loginOpts
   });
   matrixClient.startClient();
   let syncFailCount = 0;

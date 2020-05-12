@@ -11,10 +11,11 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -59,7 +60,6 @@ var __rest = (this && this.__rest) || function (s, e) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var async_1 = require("async");
 var v4_1 = __importDefault(require("uuid/v4"));
@@ -69,9 +69,8 @@ var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
 var cypherNodeMatrixTransport = function (_a) {
     var _b = _a.nodeDeviceId, nodeDeviceId = _b === void 0 ? "" : _b, _c = _a.nodeAccountUser, nodeAccountUser = _c === void 0 ? "" : _c, _d = _a.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _a.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _a.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _a.maxMsgConcurrency, maxMsgConcurrency = _g === void 0 ? 2 : _g, _h = _a.debug, debug = _h === void 0 ? debug_1.default("sifir:transport") : _h, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
-    return __awaiter(_this, void 0, void 0, function () {
+    return __awaiter(void 0, void 0, void 0, function () {
         var matrixClient, _j, _commandQueue, _sendCommand, get, post;
-        var _this = this;
         return __generator(this, function (_k) {
             switch (_k.label) {
                 case 0:
@@ -88,7 +87,7 @@ var cypherNodeMatrixTransport = function (_a) {
                 case 3:
                     matrixClient = _j;
                     // Setup room lsner, re-emits room commands as nonce events on emitter:w
-                    matrixClient.on("toDeviceEvent", function (event) { return __awaiter(_this, void 0, void 0, function () {
+                    matrixClient.on("toDeviceEvent", function (event) { return __awaiter(void 0, void 0, void 0, function () {
                         var _a, nonce, reply;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
@@ -108,7 +107,7 @@ var cypherNodeMatrixTransport = function (_a) {
                             }
                         });
                     }); });
-                    _commandQueue = async_1.queue(function (_a, cb) { return __awaiter(_this, void 0, void 0, function () {
+                    _commandQueue = async_1.queue(function (_a, cb) { return __awaiter(void 0, void 0, void 0, function () {
                         var body, payload;
                         var _b, _c;
                         var method = _a.method, command = _a.command, param = _a.param, nonce = _a.nonce, rest = __rest(_a, ["method", "command", "param", "nonce"]);
