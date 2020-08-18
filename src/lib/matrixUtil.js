@@ -57,20 +57,15 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var matrix_js_sdk_1 = __importStar(require("matrix-js-sdk"));
-exports.MatrixClient = matrix_js_sdk_1.MatrixClient;
-exports.MatrixEvent = matrix_js_sdk_1.MatrixEvent;
+exports.MatrixEvent = exports.MatrixClient = exports.getSyncMatrixClient = void 0;
+var matrix_js_sdk_1 = __importDefault(require("matrix-js-sdk"));
+var matrix_js_sdk_2 = require("@types/matrix-js-sdk");
+Object.defineProperty(exports, "MatrixClient", { enumerable: true, get: function () { return matrix_js_sdk_2.MatrixClient; } });
+Object.defineProperty(exports, "MatrixEvent", { enumerable: true, get: function () { return matrix_js_sdk_2.MatrixEvent; } });
 var debug_1 = __importDefault(require("debug"));
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {
@@ -81,11 +76,11 @@ var getSyncMatrixClient = function (_a) {
         return __generator(this, function (_h) {
             switch (_h.label) {
                 case 0:
-                    debug("Conneting to", baseUrl, user);
+                    debug("Connecting to", baseUrl, user);
                     return [4 /*yield*/, matrix_js_sdk_1.default.createClient(__assign({ baseUrl: baseUrl, initialSyncLimit: 100, timelineSupport: true, deviceId: deviceId }, opts))];
                 case 1:
                     matrixClient = _h.sent();
-                    debug("logion in with", loginType, loginOpts);
+                    debug("login in with", loginType, loginOpts);
                     return [4 /*yield*/, matrixClient.login(loginType, __assign({ user: user,
                             password: password, device_id: deviceId }, loginOpts))];
                 case 2:

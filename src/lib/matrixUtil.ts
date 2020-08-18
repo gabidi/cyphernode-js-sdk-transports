@@ -1,4 +1,5 @@
-import matrix, { MatrixClient, MatrixEvent } from "matrix-js-sdk";
+import matrix from "matrix-js-sdk";
+import { MatrixClient, MatrixEvent } from "@types/matrix-js-sdk";
 import _debug from "debug";
 const debug = _debug("matrixutil:");
 const getSyncMatrixClient = async ({

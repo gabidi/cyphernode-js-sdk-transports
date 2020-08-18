@@ -3,7 +3,6 @@ export {
   MatrixClient,
   MatrixEvent
 } from "./src/lib/matrixUtil";
-
 export {
   HttpInboundMsgBridgeMiddleware,
   HttpOutboundResponseMiddleware,
