@@ -10,7 +10,7 @@ const getSyncMatrixClient = async ({
   loginOpts = {},
   ...opts
 } = {}): Promise<MatrixClient> => {
-  debug("Conneting to", baseUrl, user);
+  debug("Connecting to", baseUrl, user);
   const matrixClient = await matrix.createClient({
     baseUrl,
     initialSyncLimit: 100,
@@ -18,7 +18,7 @@ const getSyncMatrixClient = async ({
     deviceId,
     ...opts
   });
-  debug("logion in with", loginType, loginOpts);
+  debug("login in with", loginType, loginOpts);
   await matrixClient.login(loginType, {
     user,
     password,

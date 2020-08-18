@@ -4,12 +4,13 @@
   "description": "The purpose of this stack is to enable different means of communication via modular transports. Transports are an abstraction layer that present a unified interface for Cyphernode's JS sdk to able to able to communicate with cyphernode over differnet 'wires'.",
   "main": "index.js",
   "dependencies": {
+    "@types/matrix-js-sdk": "^5.1.2",
     "async": "^3.1.0",
     "body-parser": "^1.19.0",
-    "cyphernode-js-sdk": "^0.1.0",
+    "cyphernode-js-sdk": "^0.3.2",
     "debug": "^4.1.1",
     "express": "^4.17.1",
-    "matrix-js-sdk": "https://github.com/gabidi/matrix-js-sdk.git#release/rn/0.0.1",
+    "matrix-js-sdk": "8.1.0",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
