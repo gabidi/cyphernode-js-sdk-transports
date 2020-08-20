@@ -61,11 +61,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MatrixEvent = exports.MatrixClient = exports.getSyncMatrixClient = void 0;
+exports.getSyncMatrixClient = void 0;
 var matrix_js_sdk_1 = __importDefault(require("matrix-js-sdk"));
-var matrix_js_sdk_2 = require("@types/matrix-js-sdk");
-Object.defineProperty(exports, "MatrixClient", { enumerable: true, get: function () { return matrix_js_sdk_2.MatrixClient; } });
-Object.defineProperty(exports, "MatrixEvent", { enumerable: true, get: function () { return matrix_js_sdk_2.MatrixEvent; } });
 var debug_1 = __importDefault(require("debug"));
 var debug = debug_1.default("matrixutil:");
 var getSyncMatrixClient = function (_a) {

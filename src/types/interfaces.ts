@@ -1,7 +1,7 @@
-import { MatrixClient } from "matrix-js-sdk";
 import { EventEmitter } from "events";
-import { MatrixEvent } from "matrix-js-sdk";
 import express from "express";
+type MatrixClient = import("@types/matrix-js-sdk").MatrixClient;
+type MatrixEvent = import("@types/matrix-js-sdk").MatrixEvent;
 interface MatrixBridgeMsgMiddleWare {
   inboundMiddleware(
     req: any

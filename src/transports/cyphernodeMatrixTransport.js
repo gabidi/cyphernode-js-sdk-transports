@@ -69,7 +69,7 @@ var events_1 = require("events");
 var matrixUtil_1 = require("../lib/matrixUtil");
 var constants_1 = require("../constants");
 var cypherNodeMatrixTransport = function (_a) {
-    var _b = _a.nodeDeviceId, nodeDeviceId = _b === void 0 ? "" : _b, _c = _a.nodeAccountUser, nodeAccountUser = _c === void 0 ? "" : _c, _d = _a.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _a.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _a.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _a.maxMsgConcurrency, maxMsgConcurrency = _g === void 0 ? 2 : _g, _h = _a.debug, debug = _h === void 0 ? debug_1.default("sifir:transport") : _h, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
+    var _b = _a.nodeDeviceId, nodeDeviceId = _b === void 0 ? "" : _b, _c = _a.nodeAccountUser, nodeAccountUser = _c === void 0 ? "" : _c, _d = _a.client, client = _d === void 0 ? matrixUtil_1.getSyncMatrixClient() : _d, _e = _a.emitter, emitter = _e === void 0 ? new events_1.EventEmitter() : _e, _f = _a.msgTimeout, msgTimeout = _f === void 0 ? 30000 : _f, _g = _a.maxMsgConcurrency, maxMsgConcurrency = _g === void 0 ? 2 : _g, _h = _a.debug, debug = _h === void 0 ? debug_1.default("sifir:matrixTransport") : _h, inboundMiddleware = _a.inboundMiddleware, outboundMiddleware = _a.outboundMiddleware;
     return __awaiter(void 0, void 0, void 0, function () {
         var matrixClient, _j, _commandQueue, _sendCommand, get, post;
         return __generator(this, function (_k) {

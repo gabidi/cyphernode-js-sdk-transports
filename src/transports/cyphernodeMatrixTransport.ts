@@ -2,9 +2,10 @@ import { queue } from "async";
 import uuid from "uuid/v4";
 import _debug from "debug";
 import { EventEmitter } from "events";
-import { getSyncMatrixClient, MatrixClient } from "../lib/matrixUtil";
+import { getSyncMatrixClient } from "../lib/matrixUtil";
 import { events } from "../constants";
 import { MatrixTransportParam } from "../types/interfaces";
+type MatrixClient = import("@types/matrix-js-sdk").MatrixClient;
 const cypherNodeMatrixTransport = async ({
   nodeDeviceId = "",
   nodeAccountUser = "",
@@ -12,7 +13,7 @@ const cypherNodeMatrixTransport = async ({
   emitter = new EventEmitter(),
   msgTimeout = 30000,
   maxMsgConcurrency = 2,
-  debug = _debug("sifir:transport"),
+  debug = _debug("sifir:matrixTransport"),
   inboundMiddleware,
   outboundMiddleware
 }: MatrixTransportParam): Promise<{
@@ -21,7 +22,7 @@ const cypherNodeMatrixTransport = async ({
 }> => {
   if (!inboundMiddleware || !outboundMiddleware)
     throw "Must supply inboud and outbound message middleware";
-  const matrixClient = client.then ? await client : client;
+  const matrixClient: MatrixClient = client.then ? await client : client;
   // Setup room lsner, re-emits room commands as nonce events on emitter:w
   matrixClient.on("toDeviceEvent", async event => {
     // // we know we only want to respond to messages

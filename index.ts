@@ -1,8 +1,4 @@
-export {
-  getSyncMatrixClient,
-  MatrixClient,
-  MatrixEvent
-} from "./src/lib/matrixUtil";
+export { getSyncMatrixClient } from "./src/lib/matrixUtil";
 export {
   HttpInboundMsgBridgeMiddleware,
   HttpOutboundResponseMiddleware,
