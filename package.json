@@ -10,7 +10,7 @@
     "cyphernode-js-sdk": "^0.0.9",
     "debug": "^4.1.1",
     "express": "^4.17.1",
-    "matrix-js-sdk": "^2.4.6",
+    "matrix-js-sdk": "^12.4.1",
     "node-localstorage": "^2.1.5",
     "uuid": "^3.3.3"
   },
