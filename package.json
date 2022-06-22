@@ -4,7 +4,7 @@
   "description": "The purpose of this stack is to enable different means of communication via modular transports. Transports are an abstraction layer that present a unified interface for Cyphernode's JS sdk to able to able to communicate with cyphernode over differnet 'wires'.",
   "main": "index.js",
   "dependencies": {
-    "async": "^3.1.0",
+    "async": "^3.2.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "cyphernode-js-sdk": "^0.0.9",
